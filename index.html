@@ -1,0 +1,1043 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lease Management System - Premium</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Local CSS and JS -->
+    <link rel="stylesheet" href="css/style.css">
+    <!-- Custom Tailwind Configuration -->
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        primary: {
+                            50: '#eef2ff',
+                            100: '#e0e7ff',
+                            500: '#6366f1', // indigo-500
+                            600: '#4f46e5', // indigo-600
+                            700: '#4338ca', // indigo-700
+                        },
+                        dark: '#0f172a', /* slate-900 */
+                    }
+                }
+            }
+        }
+    </script>
+    <script src="js/script.js" defer></script>
+</head>
+
+<body
+    class="bg-slate-50 dark:bg-slate-900 border-none text-slate-800 dark:text-slate-200 antialiased overflow-hidden h-screen flex transition-colors duration-300">
+
+    <!-- Floating Minimal Sidebar -->
+    <aside id="sidebar"
+        class="w-[280px] bg-white/80 dark:bg-slate-800/90 backdrop-blur-xl border border-white/40 dark:border-slate-700/50 flex flex-col fixed inset-y-4 left-4 z-50 transform -translate-x-[120%] lg:translate-x-0 lg:relative transition-all duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] shadow-[0_8px_32px_0_rgba(31,38,135,0.05)] rounded-3xl overflow-hidden">
+        <div class="h-20 flex items-center justify-between px-8 border-b border-transparent shrink-0">
+            <h1 class="text-2xl font-extrabold text-slate-800 dark:text-white tracking-tight flex items-center gap-2">
+                <div
+                    class="w-10 h-10 rounded-xl bg-gradient-primary flex items-center justify-center text-white shadow-lg shadow-indigo-500/30">
+                    <i class="fa-solid fa-building"></i>
+                </div>
+                Lease<span class="text-gradient">Pro</span>
+            </h1>
+            <button id="close-sidebar"
+                class="lg:hidden text-slate-400 hover:text-slate-700 dark:text-slate-200 transition">
+                <i class="fa-solid fa-xmark text-xl"></i>
+            </button>
+        </div>
+
+        <div class="p-6 flex-1 overflow-y-auto">
+            <p class="text-[11px] font-bold text-slate-400 uppercase tracking-[0.2em] mb-4 px-2">Contract Mgt</p>
+            <nav class="space-y-2">
+                <!-- Navigation Item 1 -->
+                <a href="#"
+                    class="nav-link active font-semibold flex items-center gap-4 px-4 py-3.5 rounded-2xl transition-all"
+                    data-target="lessee-section">
+                    <div class="w-9 h-9 rounded-xl flex items-center justify-center text-lg">
+                        <i class="fa-solid fa-user-tie"></i>
+                    </div>
+                    <span class="nav-text text-[15px]">Lessee Account</span>
+                </a>
+                <!-- Navigation Item 2 -->
+                <a href="#"
+                    class="nav-link text-slate-500 dark:text-slate-400 font-medium hover:bg-slate-50 dark:bg-slate-800/50 flex items-center gap-4 px-4 py-3.5 rounded-2xl transition-all"
+                    data-target="stall-section">
+                    <div class="w-9 h-9 rounded-xl flex items-center justify-center text-lg">
+                        <i class="fa-solid fa-store"></i>
+                    </div>
+                    <span class="nav-text text-[15px]">Select Stall</span>
+                </a>
+                <!-- Navigation Item 3 -->
+                <a href="#"
+                    class="nav-link text-slate-500 dark:text-slate-400 font-medium hover:bg-slate-50 dark:bg-slate-800/50 flex items-center gap-4 px-4 py-3.5 rounded-2xl transition-all"
+                    data-target="terms-section">
+                    <div class="w-9 h-9 rounded-xl flex items-center justify-center text-lg">
+                        <i class="fa-solid fa-calendar-days"></i>
+                    </div>
+                    <span class="nav-text text-[15px]">Lease Term & Dates</span>
+                </a>
+            </nav>
+        </div>
+
+        <!-- Bottom Profille -->
+        <div class="p-6">
+            <div
+                class="bg-indigo-50 dark:bg-indigo-900/40/50 dark:bg-indigo-900/40 rounded-2xl p-4 flex items-center gap-4 border border-indigo-100/50 transition hover:bg-indigo-50 dark:bg-indigo-900/40 cursor-pointer">
+                <img src="https://ui-avatars.com/api/?name=Admin+User&background=4f46e5&color=fff&rounded=true"
+                    class="w-10 h-10 rounded-full shadow-sm" alt="User">
+                <div>
+                    <p class="text-sm font-bold text-slate-800 dark:text-slate-100">Admin User</p>
+                    <p class="text-xs text-indigo-500 font-medium">Administrator</p>
+                </div>
+            </div>
+        </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="flex-1 flex flex-col h-screen overflow-hidden w-full relative">
+        <!-- Floating Glass Header -->
+        <header
+            class="h-20 flex items-center justify-between px-6 lg:px-10 shrink-0 z-40 mt-4 mx-4 lg:mx-8 premium-card border-none bg-white/60 dark:bg-slate-800/60">
+            <div class="flex items-center gap-5">
+                <button id="open-sidebar"
+                    class="lg:hidden text-slate-500 dark:text-slate-400 hover:text-indigo-600 bg-white dark:bg-slate-700 shadow-sm p-3 rounded-xl transition">
+                    <i class="fa-solid fa-bars"></i>
+                </button>
+                <div
+                    class="hidden md:flex items-center gap-2 text-sm font-medium text-slate-400 dark:text-slate-500 dark:text-slate-400">
+                    <span>Contracts</span>
+                    <i class="fa-solid fa-chevron-right text-[10px]"></i>
+                    <span class="text-indigo-600" id="header-breadcrumb">Creation</span>
+                </div>
+                <div class="h-8 w-px bg-slate-200 dark:bg-slate-700 hidden md:block mx-2"></div>
+                <h2 id="header-title"
+                    class="text-xl md:text-2xl font-extrabold text-slate-800 dark:text-slate-100 tracking-tight">Lessee
+                    Account</h2>
+            </div>
+
+            <div class="flex items-center gap-4">
+                <div class="hidden sm:flex relative">
+                    <i
+                        class="fa-solid fa-magnifying-glass absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 dark:text-slate-500 dark:text-slate-400"></i>
+                    <input type="text" placeholder="Quick search..."
+                        class="pl-11 pr-4 py-2.5 bg-white/80 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700/50 dark:border-slate-700/50 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:text-white transition-all w-64 shadow-sm">
+                </div>
+                <!-- Dark Mode Toggle -->
+                <button id="theme-toggle"
+                    class="relative flex items-center justify-center w-11 h-11 bg-white dark:bg-slate-800 border border-slate-100 dark:border-slate-700 text-slate-500 dark:text-slate-400 rounded-xl hover:text-indigo-600 dark:hover:text-indigo-400 hover:shadow-md transition-all shadow-sm">
+                    <i id="theme-icon" class="fa-solid fa-moon text-[1.1rem]"></i>
+                </button>
+                <!-- Notifications -->
+                <button
+                    class="relative flex items-center justify-center w-11 h-11 bg-white dark:bg-slate-800 border border-slate-100 dark:border-slate-700 text-slate-500 dark:text-slate-400 rounded-xl hover:text-indigo-600 dark:hover:text-indigo-400 hover:shadow-md transition-all shadow-sm group">
+                    <i class="fa-regular fa-bell text-[1.1rem] group-hover:animate-bounce"></i>
+                    <span
+                        class="absolute top-2 right-2.5 w-2 h-2 bg-rose-500 rounded-full border-2 border-white dark:border-slate-800"></span>
+                </button>
+            </div>
+        </header>
+
+        <!-- Scrollable Body Section -->
+        <div class="flex-1 overflow-auto px-2 md:px-6 lg:px-8 pt-2 pb-24">
+            <div class="w-full">
+                <!-- Removed Top Toolbar Wrapper for spacing efficiency -->
+
+                <!-- ============================ -->
+                <!-- SECTION 1: LESSEE PROFILE    -->
+                <!-- ============================ -->
+                <section id="lessee-section" class="page-section animate-fade-in space-y-2"
+                    style="animation-delay: 0.2s;">
+
+                    <div class="premium-card">
+                        <!-- Card Header -->
+                        <div
+                            class="bg-gradient-primary border-b border-indigo-500/30 px-8 py-6 flex flex-col sm:flex-row sm:items-center justify-between gap-6">
+                            <div class="flex items-center gap-4">
+                                <div>
+                                    <h3 class="text-xl font-bold text-white mb-1">Lessee Information</h3>
+                                    <p class="text-indigo-100 text-sm">Tenant personal and business
+                                        details</p>
+                                </div>
+                            </div>
+                            <button
+                                class="flex justify-center items-center gap-2 px-5 py-2.5 bg-white dark:bg-slate-800 text-indigo-600 rounded-xl hover:bg-slate-50 dark:bg-slate-800 hover:shadow-sm transition-all text-sm font-semibold shadow-sm">
+                                <i class="fa-regular fa-copy"></i> Copy Existing Profile
+                            </button>
+                        </div>
+
+                        <!-- Card Body -->
+                        <div class="p-8 space-y-7 bg-white/60 dark:bg-slate-800/70">
+                            <!-- Form of Business -->
+                            <div
+                                class="field-grid pb-2 border-b border-slate-100 dark:border-slate-700/50 dark:border-slate-700 border-dashed">
+                                <label class="field-label text-sm font-bold text-slate-700 dark:text-slate-200">Form of
+                                    Business</label>
+                                <div class="field-input flex flex-wrap gap-8">
+                                    <label class="flex items-center gap-2.5 cursor-pointer group">
+                                        <input type="radio" name="business_form" class="peer" checked>
+                                        <span
+                                            class="text-[15px] font-medium text-slate-600 dark:text-slate-300 peer-checked:text-indigo-600 peer-checked:font-semibold transition-colors">Single
+                                            Proprietor</span>
+                                    </label>
+                                    <label class="flex items-center gap-2.5 cursor-pointer group">
+                                        <input type="radio" name="business_form" class="peer">
+                                        <span
+                                            class="text-[15px] font-medium text-slate-600 dark:text-slate-300 peer-checked:text-indigo-600 peer-checked:font-semibold transition-colors">Corporation</span>
+                                    </label>
+                                    <label class="flex items-center gap-2.5 cursor-pointer group">
+                                        <input type="radio" name="business_form" class="peer">
+                                        <span
+                                            class="text-[15px] font-medium text-slate-600 dark:text-slate-300 peer-checked:text-indigo-600 peer-checked:font-semibold transition-colors">Partnership</span>
+                                    </label>
+                                </div>
+                            </div>
+
+                            <!-- Detailed Text Fields -->
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-6">
+
+                                <div class="space-y-2">
+                                    <label class="text-sm font-bold text-slate-700 dark:text-slate-200">Account
+                                        Name</label>
+                                    <input type="text"
+                                        class="form-input font-inter w-full px-4 py-3 rounded-xl text-[15px] text-slate-800 dark:text-slate-100"
+                                        value="MASTURA M. FOOTWEAR SHOP">
+                                </div>
+                                <div class="space-y-2">
+                                    <label
+                                        class="text-sm font-bold text-slate-700 dark:text-slate-200">Tradename/Storename</label>
+                                    <input type="text"
+                                        class="form-input font-inter w-full px-4 py-3 rounded-xl text-[15px] text-slate-800 dark:text-slate-100"
+                                        value="MASTURA M. FOOTWEAR SHOP">
+                                </div>
+
+                                <div class="md:col-span-2 space-y-2">
+                                    <label class="text-sm font-bold text-slate-700 dark:text-slate-200">Lessee
+                                        Address</label>
+                                    <input type="text"
+                                        class="form-input font-inter w-full px-4 py-3 rounded-xl text-[15px] text-slate-800 dark:text-slate-100"
+                                        value="3310 Mohagany St. Kiko Rd. Camarin Caloocan City">
+                                </div>
+
+                                <div class="space-y-2">
+                                    <label class="text-sm font-bold text-slate-700 dark:text-slate-200">Use of Leased
+                                        Premises</label>
+                                    <input type="text"
+                                        class="form-input font-inter w-full px-4 py-3 rounded-xl text-[15px] text-slate-800 dark:text-slate-100"
+                                        value="Footwear">
+                                </div>
+                                <div class="space-y-2">
+                                    <label
+                                        class="text-sm font-bold text-slate-700 dark:text-slate-200 px-1 border-l-2 border-indigo-400">Tax
+                                        Identification No</label>
+                                    <input type="text"
+                                        class="form-input font-inter w-full px-4 py-3 rounded-xl text-[15px] text-slate-800 dark:text-slate-100"
+                                        placeholder="e.g. 123-456-789-000">
+                                </div>
+
+                                <div class="space-y-2">
+                                    <label class="text-sm font-bold text-slate-700 dark:text-slate-200">Email
+                                        Address</label>
+                                    <input type="email"
+                                        class="form-input font-inter w-full px-4 py-3 rounded-xl text-[15px] text-slate-800 dark:text-slate-100"
+                                        placeholder="mastura@example.com">
+                                </div>
+                                <div class="grid grid-cols-2 gap-4">
+                                    <div class="space-y-2">
+                                        <label
+                                            class="text-sm font-bold text-slate-700 dark:text-slate-200">Mobile</label>
+                                        <input type="text"
+                                            class="form-input font-inter w-full px-4 py-3 rounded-xl text-[15px] text-slate-800 dark:text-slate-100"
+                                            placeholder="+63 900 000 0000">
+                                    </div>
+                                    <div class="space-y-2">
+                                        <label
+                                            class="text-sm font-bold text-slate-700 dark:text-slate-200">Landline</label>
+                                        <input type="text"
+                                            class="form-input font-inter w-full px-4 py-3 rounded-xl text-[15px] text-slate-800 dark:text-slate-100"
+                                            placeholder="(02) 8000 0000">
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Dividers -->
+                            <hr class="border-slate-200 dark:border-slate-700/60 dark:border-slate-700 my-6">
+
+                            <!-- Radios block -->
+                            <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                                <div class="space-y-3">
+                                    <label class="text-sm font-bold text-slate-700 dark:text-slate-200">Nature of
+                                        Business</label>
+                                    <div
+                                        class="flex flex-wrap gap-5 bg-white dark:bg-slate-800 p-4 rounded-xl border border-slate-100 dark:border-slate-700 shadow-sm">
+                                        <label class="flex items-center gap-2 cursor-pointer">
+                                            <input type="radio" name="nat_business" class="peer" checked>
+                                            <span
+                                                class="text-sm font-medium text-slate-600 dark:text-slate-300 peer-checked:text-indigo-600 peer-checked:font-bold">Retail</span>
+                                        </label>
+                                        <label class="flex items-center gap-2 cursor-pointer">
+                                            <input type="radio" name="nat_business" class="peer">
+                                            <span
+                                                class="text-sm font-medium text-slate-600 dark:text-slate-300 peer-checked:text-indigo-600 peer-checked:font-bold">Service</span>
+                                        </label>
+                                        <label class="flex items-center gap-2 cursor-pointer">
+                                            <input type="radio" name="nat_business" class="peer">
+                                            <span
+                                                class="text-sm font-medium text-slate-600 dark:text-slate-300 peer-checked:text-indigo-600 peer-checked:font-bold">Mixed</span>
+                                        </label>
+                                    </div>
+                                </div>
+
+                                <div class="space-y-3">
+                                    <label class="text-sm font-bold text-slate-700 dark:text-slate-200">Franchise
+                                        Type</label>
+                                    <div
+                                        class="grid grid-cols-2 gap-3 bg-white dark:bg-slate-800 p-4 rounded-xl border border-slate-100 dark:border-slate-700 shadow-sm">
+                                        <label class="flex items-center gap-2 cursor-pointer">
+                                            <input type="radio" name="franchise_type" class="peer">
+                                            <span
+                                                class="text-sm font-medium text-slate-600 dark:text-slate-300 peer-checked:text-indigo-600 peer-checked:font-bold">Franchisor</span>
+                                        </label>
+                                        <label class="flex items-center gap-2 cursor-pointer">
+                                            <input type="radio" name="franchise_type" class="peer" checked>
+                                            <span
+                                                class="text-sm font-medium text-slate-600 dark:text-slate-300 peer-checked:text-indigo-600 peer-checked:font-bold">Owned</span>
+                                        </label>
+                                        <label class="flex items-center gap-2 cursor-pointer">
+                                            <input type="radio" name="franchise_type" class="peer">
+                                            <span
+                                                class="text-sm font-medium text-slate-600 dark:text-slate-300 peer-checked:text-indigo-600 peer-checked:font-bold">Franchisee</span>
+                                        </label>
+                                        <label class="flex items-center gap-2 cursor-pointer">
+                                            <input type="radio" name="franchise_type" class="peer">
+                                            <span
+                                                class="text-sm font-medium text-slate-600 dark:text-slate-300 peer-checked:text-indigo-600 peer-checked:font-bold">Organizer</span>
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Nested Tabs (Corp vs Single Pro.) -->
+                        <div
+                            class="bg-indigo-50 dark:bg-indigo-900/40/30 dark:bg-indigo-900/20 border-t border-slate-200 dark:border-slate-700/50 dark:border-slate-700">
+                            <div class="flex px-4 pt-4 gap-2">
+                                <a href="#"
+                                    class="biz-tab font-bold text-sm px-6 py-3 rounded-t-xl hover:text-slate-800 dark:text-slate-100 hover:bg-white/ transition border border-transparent text-slate-500 dark:text-slate-400 text-center"
+                                    data-group="biz" data-target="biz-corp">Corporation Data</a>
+                                <a href="#"
+                                    class="biz-tab font-bold text-sm px-6 py-3 rounded-t-xl text-indigo-600 bg-white dark:bg-slate-800 border border-b-0 border-indigo-100 transition shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.02)] text-center"
+                                    data-group="biz" data-target="biz-single">Single Proprietor Data</a>
+                            </div>
+
+                            <!-- Corp Tab Content -->
+                            <div id="biz-corp"
+                                class="tab-content hidden p-8 bg-white dark:bg-slate-800 border-t border-indigo-100"
+                                data-group="biz">
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                    <div class="space-y-1.5">
+                                        <label
+                                            class="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">President
+                                            Name</label>
+                                        <input type="text"
+                                            class="form-input font-inter w-full px-4 py-3 rounded-xl text-sm">
+                                    </div>
+                                    <div class="space-y-1.5">
+                                        <label
+                                            class="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">SEC
+                                            Reg
+                                            Date</label>
+                                        <input type="date"
+                                            class="form-input font-inter w-full px-4 py-3 rounded-xl text-sm">
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Single Tab Content -->
+                            <div id="biz-single"
+                                class="tab-content block p-8 bg-white dark:bg-slate-800 border-t border-indigo-100"
+                                data-group="biz">
+                                <div class="grid grid-cols-1 md:grid-cols-3 xl:grid-cols-5 gap-6">
+                                    <div class="md:col-span-3 xl:col-span-2 space-y-1.5">
+                                        <label
+                                            class="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Proprietor
+                                            Name</label>
+                                        <input type="text"
+                                            class="form-input font-inter w-full px-4 py-3 rounded-xl text-sm font-semibold"
+                                            value="MASTURA M. MALAWAD">
+                                    </div>
+                                    <div class="space-y-1.5">
+                                        <label
+                                            class="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Last
+                                            Name</label>
+                                        <input type="text"
+                                            class="form-input font-inter w-full px-4 py-3 rounded-xl text-sm"
+                                            value="MALAWAD">
+                                    </div>
+                                    <div class="space-y-1.5">
+                                        <label
+                                            class="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">First
+                                            Name</label>
+                                        <input type="text"
+                                            class="form-input font-inter w-full px-4 py-3 rounded-xl text-sm"
+                                            value="MASTURA">
+                                    </div>
+                                    <div class="space-y-1.5">
+                                        <label
+                                            class="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">M.I.</label>
+                                        <input type="text"
+                                            class="form-input font-inter w-full px-4 py-3 rounded-xl text-sm"
+                                            value="M.">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Footer Details -->
+                        <div
+                            class="bg-slate-50 dark:bg-slate-800 border-t border-slate-200 dark:border-slate-700 p-6 sm:px-8 flex flex-col md:flex-row items-end gap-6">
+                            <div class="flex-1 w-full space-y-1.5">
+                                <label
+                                    class="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Tenant
+                                    Profile
+                                    Number</label>
+                                <div class="flex gap-2">
+                                    <input type="text"
+                                        class="form-input font-inter flex-1 px-4 py-3 border border-slate-200 dark:border-slate-700 rounded-xl text-sm font-semibold bg-white dark:bg-slate-800"
+                                        placeholder="Auto-generated">
+                                    <button
+                                        class="px-4 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:bg-slate-700 hover:text-indigo-600 font-bold transition-colors shadow-sm"><i
+                                            class="fa-solid fa-ellipsis"></i></button>
+                                </div>
+                            </div>
+                            <div class="flex-1 w-full space-y-1.5">
+                                <label
+                                    class="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Profile
+                                    Name</label>
+                                <input type="text"
+                                    class="form-input font-inter w-full px-4 py-3 border border-slate-200 dark:border-slate-700 rounded-xl text-sm bg-white dark:bg-slate-800"
+                                    placeholder="Enter custom profile name">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Form Action Buttons -->
+                    <div
+                        class="flex items-center justify-end gap-4 mt-8 bg-white/40 dark:bg-slate-800/50 p-4 rounded-2xl border border-slate-200 dark:border-slate-700/50 dark:border-slate-700">
+                        <button
+                            class="flex items-center gap-2 px-6 py-3 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 rounded-xl hover:bg-slate-50 dark:bg-slate-800 transition-all font-bold shadow-sm text-sm">
+                            Cancel
+                        </button>
+                        <button
+                            class="flex items-center gap-2 px-6 py-3 bg-gradient-primary text-white rounded-xl hover:opacity-90 transition-all font-bold shadow-lg shadow-indigo-500/30 text-sm hover:-translate-y-0.5">
+                            <i class="fa-solid fa-floppy-disk"></i> Save Data
+                        </button>
+                    </div>
+                </section>
+
+
+                <!-- ============================ -->
+                <!-- SECTION 2: STALL CONFIG      -->
+                <!-- ============================ -->
+                <section id="stall-section" class="page-section hidden animate-fade-in space-y-2"
+                    style="animation-delay: 0.2s;">
+                    <div class="premium-card">
+                        <!-- Banner Header -->
+                        <div
+                            class="bg-gradient-primary px-8 py-6 flex flex-col sm:flex-row sm:items-center justify-between gap-6">
+                            <div class="flex items-center gap-4">
+                                <div>
+                                    <h3 class="text-xl font-bold text-white mb-1">Stall Configuration</h3>
+                                    <p class="text-indigo-100 text-sm">Select and organize contract units</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Stall Tabs -->
+                        <div
+                            class="flex flex-wrap border-b border-slate-200 dark:border-slate-700/60 dark:border-slate-700 bg-white/80 dark:bg-slate-800/90 px-4 pt-4 gap-2">
+                            <a href="#"
+                                class="stall-tab text-sm font-bold px-6 py-4 rounded-t-xl text-indigo-600 bg-indigo-50 dark:bg-indigo-900/40/50 dark:bg-indigo-900/40 border border-b-0 border-indigo-100 transition shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.02)] text-center"
+                                data-group="stall" data-target="stall-single"><i
+                                    class="fa-solid fa-shop mr-2"></i>Single Stall</a>
+                            <a href="#"
+                                class="stall-tab text-sm font-bold px-6 py-4 rounded-t-xl text-slate-500 dark:text-slate-400 border border-transparent hover:text-slate-700 dark:text-slate-200 hover:bg-white/ transition text-center"
+                                data-group="stall" data-target="stall-multi"><i
+                                    class="fa-solid fa-layer-group mr-2"></i>Multiple Stalls</a>
+                            <a href="#"
+                                class="stall-tab text-sm font-bold px-6 py-4 rounded-t-xl text-slate-500 dark:text-slate-400 border border-transparent hover:text-slate-700 dark:text-slate-200 hover:bg-white/ transition text-center"
+                                data-group="stall" data-target="stall-daily"><i
+                                    class="fa-regular fa-calendar-check mr-2"></i>Daily</a>
+                        </div>
+
+                        <!-- Tab Content : Single Stall -->
+                        <div id="stall-single" class="tab-content block p-6 md:p-10 bg-white/70 dark:bg-slate-800/80"
+                            data-group="stall">
+                            <div class="grid grid-cols-1 lg:grid-cols-12 gap-10">
+
+                                <!-- Left Column Form -->
+                                <div class="lg:col-span-5 space-y-5">
+                                    <div
+                                        class="bg-indigo-50 dark:bg-indigo-900/40/30 dark:bg-indigo-900/20 border border-indigo-100/50 rounded-2xl p-5 space-y-4 shadow-sm">
+                                        <!-- Stall Code -->
+                                        <div>
+                                            <label
+                                                class="block text-xs font-bold text-indigo-900 uppercase tracking-wider mb-2">Stall
+                                                Code</label>
+                                            <div class="flex gap-2">
+                                                <input type="text" value="IMC.BLOCK4 - 11"
+                                                    class="form-input font-inter flex-1 px-4 py-2.5 bg-white dark:bg-slate-800 border border-indigo-200 rounded-xl text-[15px] font-bold text-indigo-900">
+                                                <button
+                                                    class="px-3.5 bg-white dark:bg-slate-800 border border-indigo-200 rounded-xl hover:bg-indigo-50 dark:bg-indigo-900/40 text-indigo-600 shadow-sm transition"><i
+                                                        class="fa-solid fa-plus"></i></button>
+                                                <button
+                                                    class="px-3.5 bg-white dark:bg-slate-800 border border-indigo-200 rounded-xl hover:bg-indigo-50 dark:bg-indigo-900/40 text-indigo-600 shadow-sm transition"><i
+                                                        class="fa-solid fa-code"></i></button>
+                                                <button
+                                                    class="px-3.5 bg-rose-50 border border-rose-200 rounded-xl hover:bg-rose-100 text-rose-600 shadow-sm transition"><i
+                                                        class="fa-solid fa-xmark"></i></button>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div class="grid grid-cols-2 gap-4">
+                                        <div class="space-y-1.5">
+                                            <label
+                                                class="text-xs font-bold text-slate-500 dark:text-slate-400 tracking-wider">Stall
+                                                Number</label>
+                                            <input type="text" value="BLOCK4 - 11"
+                                                class="form-input font-inter w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-sm font-medium text-slate-600 dark:text-slate-300"
+                                                readonly>
+                                        </div>
+                                        <div class="space-y-1.5">
+                                            <label
+                                                class="text-xs font-bold text-slate-500 dark:text-slate-400 tracking-wider">Floor</label>
+                                            <input type="text" value="IMC.GROUND FLOOR"
+                                                class="form-input font-inter w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-sm font-medium text-slate-600 dark:text-slate-300"
+                                                readonly>
+                                        </div>
+                                        <div class="space-y-1.5">
+                                            <label
+                                                class="text-xs font-bold text-slate-500 dark:text-slate-400 tracking-wider">Unit
+                                                Type</label>
+                                            <input type="text" value="KIOSK"
+                                                class="form-input font-inter w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-sm font-medium text-slate-600 dark:text-slate-300"
+                                                readonly>
+                                        </div>
+                                        <div class="space-y-1.5">
+                                            <label
+                                                class="text-xs font-bold text-slate-500 dark:text-slate-400 tracking-wider">Section</label>
+                                            <input type="text" value="IMC.N/A"
+                                                class="form-input font-inter w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-sm font-medium text-slate-600 dark:text-slate-300"
+                                                readonly>
+                                        </div>
+                                    </div>
+
+                                    <div
+                                        class="flex items-center justify-between p-4 bg-gradient-to-r from-slate-800 to-slate-900 rounded-2xl mt-4 shadow-lg text-white">
+                                        <label class="text-lg font-bold tracking-wide">Total Sqm</label>
+                                        <div class="flex items-center gap-2">
+                                            <input type="number" step="0.01" value="4.00"
+                                                class="w-24 px-3 py-1.5 bg-white/ border border-white/20 rounded-lg text-lg font-bold text-right focus:border-white focus:outline-none focus:bg-white/ transition text-white">
+                                            <span class="text-slate-400 font-medium text-sm">sq.m.</span>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Right Column Form -->
+                                <div class="lg:col-span-7 space-y-6">
+                                    <div
+                                        class="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 shadow-sm rounded-2xl p-6 space-y-4 hover:border-indigo-200 transition-colors">
+                                        <div class="flex items-center gap-2 mb-2">
+                                            <div
+                                                class="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 text-sm">
+                                                <i class="fa-solid fa-file-invoice-dollar"></i>
+                                            </div>
+                                            <h4 class="font-bold text-slate-800 dark:text-slate-100 text-lg">Rent Clause
+                                            </h4>
+                                        </div>
+                                        <select
+                                            class="w-full form-input font-inter px-4 py-3 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-sm font-medium text-slate-600 dark:text-slate-300">
+                                            <option>Standard Rent Format</option>
+                                        </select>
+                                        <textarea rows="2"
+                                            class="form-input font-inter w-full px-4 py-3 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-[15px] font-medium text-slate-700 dark:text-slate-200 leading-relaxed shadow-sm">PHP 27,000.00 /month; plus 12% EVAT; subject to 5% withholding tax</textarea>
+                                    </div>
+
+                                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                        <div
+                                            class="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 shadow-sm rounded-2xl p-5 space-y-3 hover:border-indigo-200 transition-colors">
+                                            <h5
+                                                class="font-bold text-slate-800 dark:text-slate-100 flex items-center gap-2 text-sm">
+                                                <i class="fa-solid fa-bolt text-amber-500"></i> CUSA Clause
+                                            </h5>
+                                            <select
+                                                class="w-full form-input font-inter px-3 py-2.5 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-sm text-slate-600 dark:text-slate-300">
+                                                <option>Standard format</option>
+                                            </select>
+                                            <textarea rows="2"
+                                                class="form-input font-inter w-full px-3 py-2.5 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-sm font-medium text-slate-700 dark:text-slate-200 shadow-sm">PHP 1,500.00 /month; plus 12% EVAT</textarea>
+                                        </div>
+
+                                        <div
+                                            class="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 shadow-sm rounded-2xl p-5 space-y-3 hover:border-indigo-200 transition-colors">
+                                            <h5
+                                                class="font-bold text-slate-800 dark:text-slate-100 flex items-center gap-2 text-sm">
+                                                <i class="fa-solid fa-fan text-indigo-500"></i> Aircon Clause
+                                            </h5>
+                                            <select
+                                                class="w-full form-input font-inter px-3 py-2.5 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-sm text-slate-600 dark:text-slate-300">
+                                                <option>Standard format</option>
+                                            </select>
+                                            <textarea rows="2"
+                                                class="form-input font-inter w-full px-3 py-2.5 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-sm font-medium text-slate-700 dark:text-slate-200 shadow-sm">PHP 1,500.00 /month; plus 12% EVAT</textarea>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Bottom 3 Columns Dashboard Cards -->
+                            <div
+                                class="grid grid-cols-1 md:grid-cols-3 gap-6 mt-12 bg-slate-50 dark:bg-slate-800/50 rounded-3xl p-6 border border-slate-100 dark:border-slate-700">
+                                <!-- Col 1: Monthly Rent -->
+                                <div
+                                    class="bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-700/60 dark:border-slate-700 overflow-hidden transform hover:-translate-y-1 transition duration-300">
+                                    <div
+                                        class="bg-gradient-to-r from-blue-500 to-blue-600 px-5 py-3 flex items-center gap-2">
+                                        <i class="fa-solid fa-chart-pie text-white opacity-80"></i>
+                                        <h4 class="font-bold text-sm text-white tracking-wide">Monthly Rent</h4>
+                                    </div>
+                                    <div class="p-5 space-y-3.5">
+                                        <div
+                                            class="flex justify-between items-center bg-slate-50 dark:bg-slate-800 border border-slate-100 dark:border-slate-700 p-2 rounded-xl">
+                                            <span class="text-slate-600 dark:text-slate-300 text-sm font-medium">Rate
+                                                /sqm</span>
+                                            <input type="text"
+                                                class="font-inter w-28 px-3 py-1.5 text-right border border-slate-300 rounded-lg focus:border-blue-500 focus:ring-2 focus:ring-blue-200 font-bold bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-100"
+                                                value="6,750.00">
+                                        </div>
+                                        <label class="flex justify-between items-center py-1 cursor-pointer group">
+                                            <span
+                                                class="text-slate-600 dark:text-slate-300 text-sm font-medium group-hover:text-blue-600 transition">Plus
+                                                EVAT</span>
+                                            <input type="checkbox" class="w-5 h-5 text-blue-600 rounded-md" checked>
+                                        </label>
+                                        <div class="flex justify-between items-center">
+                                            <span class="text-slate-500 dark:text-slate-400 text-sm">Basic Rent</span>
+                                            <span
+                                                class="font-inter font-bold text-slate-700 dark:text-slate-200">27,000.00</span>
+                                        </div>
+                                        <div class="flex justify-between items-center">
+                                            <span class="text-slate-500 dark:text-slate-400 text-sm">EVAT Amount</span>
+                                            <span
+                                                class="font-inter font-bold text-slate-700 dark:text-slate-200">3,240.00</span>
+                                        </div>
+                                        <div
+                                            class="flex justify-between items-center pt-3 border-t border-slate-100 dark:border-slate-700/80">
+                                            <span
+                                                class="text-slate-800 dark:text-slate-100 font-extrabold text-sm">Total
+                                                Amount</span>
+                                            <span
+                                                class="font-inter font-extrabold text-blue-700 text-lg">30,240.00</span>
+                                        </div>
+
+                                        <div
+                                            class="border-t border-dashed border-slate-200 dark:border-slate-700 mt-4 pt-4 space-y-3">
+                                            <label class="flex justify-between items-center cursor-pointer group">
+                                                <span
+                                                    class="font-bold text-xs text-slate-600 dark:text-slate-300 uppercase tracking-wide group-hover:text-blue-600 transition">Implements
+                                                    WT</span>
+                                                <input type="checkbox" class="w-4 h-4 text-blue-600 rounded-md">
+                                            </label>
+                                            <div class="flex justify-between items-center">
+                                                <span class="text-slate-500 dark:text-slate-400 text-sm">WT Rate</span>
+                                                <input type="text"
+                                                    class="font-inter w-20 px-2 py-1 text-right border border-slate-200 dark:border-slate-700 rounded-md text-sm font-semibold bg-slate-50 dark:bg-slate-800"
+                                                    value="5.00%">
+                                            </div>
+                                            <div class="flex justify-between items-center">
+                                                <span class="text-slate-500 dark:text-slate-400 text-sm">WT
+                                                    Amount</span>
+                                                <span
+                                                    class="font-inter text-slate-700 dark:text-slate-200 font-bold text-sm">0.00</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Col 2: Monthly CUSA -->
+                                <div
+                                    class="bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-700/60 dark:border-slate-700 overflow-hidden transform hover:-translate-y-1 transition duration-300">
+                                    <div
+                                        class="bg-gradient-to-r from-amber-500 to-orange-500 px-5 py-3 flex items-center gap-2">
+                                        <i class="fa-solid fa-bolt text-white opacity-80"></i>
+                                        <h4 class="font-bold text-sm text-white tracking-wide">Monthly CUSA</h4>
+                                    </div>
+                                    <div class="p-5 space-y-3.5">
+                                        <div
+                                            class="flex justify-between items-center bg-slate-50 dark:bg-slate-800 border border-slate-100 dark:border-slate-700 p-2 rounded-xl">
+                                            <span class="text-slate-600 dark:text-slate-300 text-sm font-medium">Rate
+                                                /sqm</span>
+                                            <input type="text"
+                                                class="font-inter w-28 px-3 py-1.5 text-right border border-slate-300 rounded-lg focus:border-amber-500 focus:ring-2 focus:ring-amber-200 font-bold bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-100"
+                                                value="375.00">
+                                        </div>
+                                        <label class="flex justify-between items-center py-1 cursor-pointer group">
+                                            <span
+                                                class="text-slate-600 dark:text-slate-300 text-sm font-medium group-hover:text-amber-600 transition">Plus
+                                                EVAT</span>
+                                            <input type="checkbox" class="w-5 h-5 text-amber-500 rounded-md" checked>
+                                        </label>
+                                        <div class="flex justify-between items-center">
+                                            <span class="text-slate-500 dark:text-slate-400 text-sm">Basic CUSA</span>
+                                            <span
+                                                class="font-inter font-bold text-slate-700 dark:text-slate-200">1,500.00</span>
+                                        </div>
+                                        <div class="flex justify-between items-center">
+                                            <span class="text-slate-500 dark:text-slate-400 text-sm">EVAT Amount</span>
+                                            <span
+                                                class="font-inter font-bold text-slate-700 dark:text-slate-200">180.00</span>
+                                        </div>
+                                        <div
+                                            class="flex justify-between items-center pt-3 border-t border-slate-100 dark:border-slate-700/80">
+                                            <span
+                                                class="text-slate-800 dark:text-slate-100 font-extrabold text-sm">Total
+                                                Amount</span>
+                                            <span
+                                                class="font-inter font-extrabold text-amber-600 text-lg">1,680.00</span>
+                                        </div>
+
+                                        <div
+                                            class="border-t border-dashed border-slate-200 dark:border-slate-700 mt-4 pt-4 space-y-3">
+                                            <label class="flex justify-between items-center cursor-pointer group">
+                                                <span
+                                                    class="font-bold text-xs text-slate-600 dark:text-slate-300 uppercase tracking-wide group-hover:text-amber-600 transition">Implements
+                                                    WT</span>
+                                                <input type="checkbox" class="w-4 h-4 text-amber-500 rounded-md">
+                                            </label>
+                                            <div class="flex justify-between items-center">
+                                                <span class="text-slate-500 dark:text-slate-400 text-sm">WT Rate</span>
+                                                <input type="text"
+                                                    class="font-inter w-20 px-2 py-1 text-right border border-slate-200 dark:border-slate-700 rounded-md text-sm font-semibold bg-slate-50 dark:bg-slate-800"
+                                                    value="2.00%">
+                                            </div>
+                                            <div class="flex justify-between items-center">
+                                                <span class="text-slate-500 dark:text-slate-400 text-sm">WT
+                                                    Amount</span>
+                                                <span
+                                                    class="font-inter text-slate-700 dark:text-slate-200 font-bold text-sm">0.00</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Col 3: Monthly Aircon -->
+                                <div
+                                    class="bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-700/60 dark:border-slate-700 overflow-hidden transform hover:-translate-y-1 transition duration-300">
+                                    <div
+                                        class="bg-gradient-to-r from-teal-400 to-emerald-500 px-5 py-3 flex items-center gap-2">
+                                        <i class="fa-solid fa-fan text-white opacity-80"></i>
+                                        <h4 class="font-bold text-sm text-white tracking-wide">Monthly Aircon</h4>
+                                    </div>
+                                    <div class="p-5 space-y-3.5">
+                                        <div
+                                            class="flex justify-between items-center bg-slate-50 dark:bg-slate-800 border border-slate-100 dark:border-slate-700 p-2 rounded-xl">
+                                            <span class="text-slate-600 dark:text-slate-300 text-sm font-medium">Rate
+                                                /sqm</span>
+                                            <input type="text"
+                                                class="font-inter w-28 px-3 py-1.5 text-right border border-slate-300 rounded-lg focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200 font-bold bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-100"
+                                                value="375.00">
+                                        </div>
+                                        <label class="flex justify-between items-center py-1 cursor-pointer group">
+                                            <span
+                                                class="text-slate-600 dark:text-slate-300 text-sm font-medium group-hover:text-emerald-500 transition">Plus
+                                                EVAT</span>
+                                            <input type="checkbox" class="w-5 h-5 text-emerald-500 rounded-md" checked>
+                                        </label>
+                                        <div class="flex justify-between items-center">
+                                            <span class="text-slate-500 dark:text-slate-400 text-sm">Basic Aircon</span>
+                                            <span
+                                                class="font-inter font-bold text-slate-700 dark:text-slate-200">1,500.00</span>
+                                        </div>
+                                        <div class="flex justify-between items-center">
+                                            <span class="text-slate-500 dark:text-slate-400 text-sm">EVAT Amount</span>
+                                            <span
+                                                class="font-inter font-bold text-slate-700 dark:text-slate-200">180.00</span>
+                                        </div>
+                                        <div
+                                            class="flex justify-between items-center pt-3 border-t border-slate-100 dark:border-slate-700/80">
+                                            <span
+                                                class="text-slate-800 dark:text-slate-100 font-extrabold text-sm">Total
+                                                Amount</span>
+                                            <span
+                                                class="font-inter font-extrabold text-emerald-600 text-lg">1,680.00</span>
+                                        </div>
+
+                                        <div
+                                            class="border-t border-dashed border-slate-200 dark:border-slate-700 mt-4 pt-4 space-y-3">
+                                            <label class="flex justify-between items-center cursor-pointer group">
+                                                <span
+                                                    class="font-bold text-xs text-slate-600 dark:text-slate-300 uppercase tracking-wide group-hover:text-emerald-500 transition">Implements
+                                                    WT</span>
+                                                <input type="checkbox" class="w-4 h-4 text-emerald-500 rounded-md">
+                                            </label>
+                                            <div class="flex justify-between items-center">
+                                                <span class="text-slate-500 dark:text-slate-400 text-sm">WT Rate</span>
+                                                <input type="text"
+                                                    class="font-inter w-20 px-2 py-1 text-right border border-slate-200 dark:border-slate-700 rounded-md text-sm font-semibold bg-slate-50 dark:bg-slate-800"
+                                                    value="2.00%">
+                                            </div>
+                                            <div class="flex justify-between items-center">
+                                                <span class="text-slate-500 dark:text-slate-400 text-sm">WT
+                                                    Amount</span>
+                                                <span
+                                                    class="font-inter text-slate-700 dark:text-slate-200 font-bold text-sm">0.00</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Tab Content placeholders -->
+                        <div id="stall-multi"
+                            class="tab-content hidden p-16 bg-white/70 dark:bg-slate-800/80 text-center"
+                            data-group="stall">
+                            <i class="fa-solid fa-layer-group text-5xl text-indigo-200 mb-4 animate-bounce"></i>
+                            <h3 class="text-xl font-bold text-slate-800 dark:text-slate-100 mb-2">Multiple Stalls</h3>
+                            <p class="text-slate-500 dark:text-slate-400">Configuration panel for multi-stall contracts.
+                            </p>
+                        </div>
+                        <div id="stall-daily"
+                            class="tab-content hidden p-16 bg-white/70 dark:bg-slate-800/80 text-center"
+                            data-group="stall">
+                            <i class="fa-regular fa-calendar-check text-5xl text-indigo-200 mb-4 animate-bounce"></i>
+                            <h3 class="text-xl font-bold text-slate-800 dark:text-slate-100 mb-2">Daily Contracts</h3>
+                            <p class="text-slate-500 dark:text-slate-400">Fast tracking setup for daily or event
+                                leasing.</p>
+                        </div>
+                    </div>
+
+                    <!-- Form Action Buttons -->
+                    <div
+                        class="flex items-center justify-end gap-4 mt-8 bg-white/40 dark:bg-slate-800/50 p-4 rounded-2xl border border-slate-200 dark:border-slate-700/50 dark:border-slate-700">
+                        <button
+                            class="flex items-center gap-2 px-6 py-3 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 rounded-xl hover:bg-slate-50 dark:bg-slate-800 transition-all font-bold shadow-sm text-sm">
+                            Cancel
+                        </button>
+                        <button
+                            class="flex items-center gap-2 px-6 py-3 bg-gradient-primary text-white rounded-xl hover:opacity-90 transition-all font-bold shadow-lg shadow-indigo-500/30 text-sm hover:-translate-y-0.5">
+                            <i class="fa-solid fa-floppy-disk"></i> Save Stall Config
+                        </button>
+                    </div>
+                </section>
+
+                <!-- ============================ -->
+                <!-- SECTION 3: LEASE TERMS       -->
+                <!-- ============================ -->
+                <section id="terms-section" class="page-section hidden animate-fade-in space-y-2"
+                    style="animation-delay: 0.2s;">
+                    <div class="w-full">
+                        <div class="premium-card overflow-hidden">
+                            <!-- Banner Header -->
+                            <div class="bg-gradient-primary px-8 py-6">
+                                <h3 class="text-xl font-bold text-white mb-1">Lease Duration</h3>
+                                <p class="text-indigo-100 text-sm">Configure contract start and end rules</p>
+                            </div>
+
+                            <div class="p-8 md:p-10 space-y-10 bg-white/80 dark:bg-slate-800/90">
+
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                                    <div class="space-y-2 relative">
+                                        <label class="text-sm font-bold text-slate-700 dark:text-slate-200">Commencement
+                                            of Lease</label>
+                                        <input type="date"
+                                            class="form-input font-inter w-full px-4 py-3 rounded-xl text-[15px] font-semibold text-slate-800 dark:text-slate-100 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 hover:border-indigo-300 transition"
+                                            value="2022-07-01">
+                                    </div>
+                                    <div class="space-y-2 relative">
+                                        <label class="text-sm font-bold text-slate-700 dark:text-slate-200">Commencement
+                                            of Rent</label>
+                                        <input type="date"
+                                            class="form-input font-inter w-full px-4 py-3 rounded-xl text-[15px] font-semibold text-slate-800 dark:text-slate-100 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 hover:border-indigo-300 transition"
+                                            value="2022-07-01">
+                                    </div>
+                                </div>
+
+                                <div
+                                    class="bg-slate-50 dark:bg-slate-800/50 p-6 rounded-3xl border border-slate-100 dark:border-slate-700 shadow-inner">
+                                    <div class="flex items-center justify-between mb-4">
+                                        <label class="text-sm font-bold text-slate-700 dark:text-slate-200">Contract
+                                            Type</label>
+                                    </div>
+
+                                    <div
+                                        class="bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-700/60 dark:border-slate-700 overflow-hidden">
+                                        <div
+                                            class="flex border-b border-slate-100 dark:border-slate-700 p-2 gap-2 bg-slate-50 dark:bg-slate-800/50">
+                                            <a href="#"
+                                                class="term-tab flex-1 py-2.5 rounded-xl text-center text-sm font-bold transition-all bg-gradient-primary text-white shadow-md transform scale-[1.02]"
+                                                data-group="term" data-target="term-long">Long-Term</a>
+                                            <a href="#"
+                                                class="term-tab flex-1 py-2.5 rounded-xl text-center text-sm font-semibold text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:bg-slate-700 transition-all"
+                                                data-group="term" data-target="term-short">Short-Term</a>
+                                            <a href="#"
+                                                class="term-tab flex-1 py-2.5 rounded-xl text-center text-sm font-semibold text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:bg-slate-700 transition-all hidden sm:block"
+                                                data-group="term" data-target="term-exhibit">Exhibit</a>
+                                            <a href="#"
+                                                class="term-tab flex-1 py-2.5 rounded-xl text-center text-sm font-semibold text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:bg-slate-700 transition-all hidden sm:block"
+                                                data-group="term" data-target="term-ambulant">Ambulant</a>
+                                        </div>
+
+                                        <div id="term-long" class="tab-content block p-6 md:px-10 space-y-5"
+                                            data-group="term">
+                                            <div class="flex items-center justify-between group">
+                                                <span
+                                                    class="text-[15px] font-semibold text-slate-600 dark:text-slate-300">Years</span>
+                                                <div class="w-32">
+                                                    <input type="number" name="years"
+                                                        class="font-inter form-input w-full px-4 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-center text-lg font-bold focus:ring-2 focus:ring-indigo-500 transition-all group-hover:border-indigo-300"
+                                                        value="2">
+                                                </div>
+                                            </div>
+                                            <div class="flex items-center justify-between group">
+                                                <span
+                                                    class="text-[15px] font-semibold text-slate-600 dark:text-slate-300">And
+                                                    Months</span>
+                                                <div class="w-32">
+                                                    <input type="number"
+                                                        class="font-inter form-input w-full px-4 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-center text-lg font-bold focus:ring-2 focus:ring-indigo-500 transition-all group-hover:border-indigo-300"
+                                                        value="6">
+                                                </div>
+                                            </div>
+                                            <div class="flex items-center justify-between group">
+                                                <span
+                                                    class="text-[15px] font-semibold text-slate-600 dark:text-slate-300">And
+                                                    Days</span>
+                                                <div class="w-32">
+                                                    <input type="number"
+                                                        class="font-inter form-input w-full px-4 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-center text-lg font-bold focus:ring-2 focus:ring-indigo-500 transition-all group-hover:border-indigo-300"
+                                                        value="1">
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div
+                                            class="bg-indigo-50 dark:bg-indigo-900/40/80 p-4 text-center text-sm font-bold text-indigo-700 border-t border-indigo-100/60 tracking-wide">
+                                            Two (2) Years and Six (6) Months and One (1) Day
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div
+                                    class="bg-slate-800 text-white rounded-2xl p-6 flex flex-col md:flex-row items-center gap-6 shadow-lg shadow-slate-800/20">
+                                    <div class="flex-1 w-full relative">
+                                        <label
+                                            class="text-xs font-bold text-slate-400 uppercase tracking-widest mb-2 block">Expiration
+                                            Date</label>
+                                        <input type="date"
+                                            class="font-inter w-full px-4 py-3 bg-white/ border border-white/20 rounded-xl text-lg font-bold text-white focus:outline-none focus:border-white transition cursor-not-allowed opacity-80"
+                                            value="2024-12-31" disabled>
+                                    </div>
+                                    <div class="h-12 w-px bg-white/ hidden md:block"></div>
+                                    <div class="flex-1 w-full grid grid-cols-2 gap-4">
+                                        <div>
+                                            <label
+                                                class="text-xs font-bold text-indigo-300 uppercase tracking-widest mb-1 block">Total
+                                                Months</label>
+                                            <input id="total-months" type="text"
+                                                class="font-inter w-full bg-transparent border-0 text-3xl font-extrabold text-white p-0"
+                                                value="30.00" readonly>
+                                        </div>
+                                        <div>
+                                            <label
+                                                class="text-xs font-bold text-indigo-300 uppercase tracking-widest mb-1 block">Total
+                                                Days</label>
+                                            <input id="total-days" type="text"
+                                                class="font-inter w-full bg-transparent border-0 text-3xl font-extrabold text-white p-0"
+                                                value="914" readonly>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div
+                                    class="border border-amber-200/60 rounded-3xl p-6 bg-gradient-to-br from-amber-50 to-orange-50/30">
+                                    <label class="flex items-center gap-3 cursor-pointer mb-5">
+                                        <input type="checkbox"
+                                            class="w-5 h-5 text-amber-500 rounded-md border-amber-300 focus:ring-amber-500">
+                                        <span class="text-[15px] font-bold text-amber-900 flex items-center gap-2">
+                                            <i class="fa-solid fa-person-digging text-amber-600"></i> Construction Rent
+                                            Free Period
+                                        </span>
+                                    </label>
+                                    <div class="grid grid-cols-1 md:grid-cols-2 gap-5 opacity-40 pointer-events-none transition-opacity duration-300"
+                                        id="rent-free-fields">
+                                        <div class="md:col-span-2 space-y-1.5">
+                                            <label
+                                                class="text-xs font-bold text-slate-600 dark:text-slate-300 uppercase tracking-wider">Turnover
+                                                Date</label>
+                                            <input type="date"
+                                                class="form-input font-inter w-full px-4 py-3 border border-amber-200 rounded-xl text-sm bg-white/80 dark:bg-slate-800/90">
+                                        </div>
+                                        <div class="space-y-1.5">
+                                            <label
+                                                class="text-xs font-bold text-slate-600 dark:text-slate-300 uppercase tracking-wider">Rent
+                                                Free From</label>
+                                            <input type="date"
+                                                class="form-input font-inter w-full px-4 py-3 border border-amber-200 rounded-xl text-sm bg-white/80 dark:bg-slate-800/90">
+                                        </div>
+                                        <div class="space-y-1.5">
+                                            <label
+                                                class="text-xs font-bold text-slate-600 dark:text-slate-300 uppercase tracking-wider">Rent
+                                                Free To</label>
+                                            <input type="date"
+                                                class="form-input font-inter w-full px-4 py-3 border border-amber-200 rounded-xl text-sm bg-white/80 dark:bg-slate-800/90">
+                                        </div>
+                                    </div>
+                                </div>
+
+                            </div>
+                        </div>
+
+                        <!-- Form Action Buttons -->
+                        <div class="flex items-center justify-end gap-4 mt-6">
+                            <button
+                                class="flex items-center gap-2 px-6 py-3 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 rounded-xl hover:bg-slate-50 dark:bg-slate-800 transition-all font-bold shadow-sm text-sm">
+                                Cancel
+                            </button>
+                            <button
+                                class="flex items-center gap-2 px-6 py-3 bg-gradient-primary text-white rounded-xl hover:opacity-90 transition-all font-bold shadow-lg shadow-indigo-500/30 text-sm hover:-translate-y-0.5">
+                                <i class="fa-solid fa-floppy-disk"></i> Save Terms
+                            </button>
+                        </div>
+                    </div>
+                </section>
+            </div>
+
+            <!-- Footer empty space for scroll -->
+            <div class="h-24"></div>
+        </div>
+    </main>
+
+    <script>
+        // Inline small behaviour adjustment exclusively for the checkbox opacity toggle
+        document.querySelector('input[type="checkbox"]').addEventListener('change', function () {
+            const fields = document.getElementById('rent-free-fields');
+            if (fields) {
+                if (this.checked) {
+                    fields.classList.remove('opacity-40', 'pointer-events-none');
+                } else {
+                    fields.classList.add('opacity-40', 'pointer-events-none');
+                }
+            }
+        });
+    </script>
+</body>
+
+</html>

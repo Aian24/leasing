@@ -120,8 +120,8 @@ function renderDashboard() {
     chart.innerHTML = heights.map((h, i) => `<div class="chart-bar" style="height:${h}%;animation-delay:${i * 0.05}s"></div>`).join('');
 
     // System gauges
-    renderGauge('gauge-disk', DB.sysInfo.diskUsage, '#6366f1');
-    renderGauge('gauge-mem', DB.sysInfo.memUsage, '#8b5cf6');
+    renderGauge('gauge-disk', DB.sysInfo.diskUsage, '#3b82f6');
+    renderGauge('gauge-mem', DB.sysInfo.memUsage, '#2563eb');
     renderGauge('gauge-cpu', DB.sysInfo.cpuLoad, '#38bdf8');
     document.getElementById('dash-disk-val').textContent = DB.sysInfo.diskUsage + '%';
     document.getElementById('dash-mem-val').textContent = DB.sysInfo.memUsage + '%';
@@ -149,7 +149,7 @@ function renderGauge(id, val, color) {
 // ── User Management ──────────────────────────────────────────
 function renderUsersTable(filter = '') {
     const tbody = document.getElementById('users-tbody');
-    const roleColors = { Admin: 'chip-purple', Manager: 'chip-blue', Staff: 'chip-green', Viewer: 'chip-amber' };
+    const roleColors = { Admin: 'chip-blue', Manager: 'chip-blue', Staff: 'chip-green', Viewer: 'chip-amber' };
     const statusColors = { Active: 'chip-green', Inactive: 'chip-amber', Suspended: 'chip-red' };
 
     const data = DB.users.filter(u =>
@@ -188,7 +188,7 @@ function initials(name) {
     return name.split(' ').slice(0, 2).map(n => n[0]).join('').toUpperCase();
 }
 function avatarColor(name) {
-    const colors = ['#6366f1', '#8b5cf6', '#ec4899', '#10b981', '#f59e0b', '#3b82f6', '#14b8a6'];
+    const colors = ['#3b82f6', '#2563eb', '#ec4899', '#10b981', '#f59e0b', '#3b82f6', '#14b8a6'];
     let h = 0; for (const c of name) h += c.charCodeAt(0);
     return colors[h % colors.length];
 }
@@ -299,7 +299,7 @@ function renderPagesTable(filter = '') {
     tbody.innerHTML = data.map(p => `
         <tr>
             <td style="font-weight:700">${p.name}</td>
-            <td><code style="font-size:0.75rem;color:#818cf8;background:rgba(99,102,241,0.1);padding:3px 8px;border-radius:6px">${p.slug}</code></td>
+            <td><code style="font-size:0.75rem;color:#60a5fa;background:rgba(99,102,241,0.1);padding:3px 8px;border-radius:6px">${p.slug}</code></td>
             <td>
                 <label class="toggle-switch">
                     <input type="checkbox" ${p.visible ? 'checked' : ''} onchange="togglePage(${p.id}, this.checked)">
@@ -388,8 +388,8 @@ function renderSystem() {
     document.getElementById('sys-mysql').textContent = s.mysqlVersion;
     document.getElementById('sys-ver').textContent = s.appVersion;
     document.getElementById('sys-uptime').textContent = s.uptime;
-    renderGauge('sys-disk-bar', s.diskUsage, '#6366f1');
-    renderGauge('sys-mem-bar', s.memUsage, '#8b5cf6');
+    renderGauge('sys-disk-bar', s.diskUsage, '#3b82f6');
+    renderGauge('sys-mem-bar', s.memUsage, '#2563eb');
     renderGauge('sys-cpu-bar', s.cpuLoad, '#38bdf8');
     document.getElementById('sys-disk-pct').textContent = s.diskUsage + '%';
     document.getElementById('sys-mem-pct').textContent = s.memUsage + '%';
@@ -413,7 +413,7 @@ function renderLogsTable() {
         <tr>
             <td style="font-family:'Inter',sans-serif;font-size:0.75rem;color:var(--muted)">${r.time}</td>
             <td><span style="font-weight:700;color:#a5b4fc">@${r.user}</span></td>
-            <td><span class="chip chip-purple" style="font-size:0.65rem;">${r.action}</span></td>
+            <td><span class="chip chip-blue" style="font-size:0.65rem;">${r.action}</span></td>
             <td style="font-size:0.8125rem">${r.detail}</td>
             <td><span class="chip ${levelMap[r.level]}">${r.level}</span></td>
         </tr>`).join('');
@@ -578,7 +578,7 @@ function saveAnnouncement() {
         title: isEdit ? 'Update Announcement' : 'Publish Announcement',
         msg: isEdit ? `Save changes to "<b>${title}</b>"?` : `Are you sure you want to broadcast "<b>${title}</b>" to ${roles === 'all' ? 'everyone' : roles}?`,
         icon: 'fa-paper-plane',
-        color: '#818cf8',
+        color: '#60a5fa',
         btnClass: 'btn-primary',
         btnIcon: 'fa-check',
         btnText: isEdit ? 'Save Changes' : 'Publish',
@@ -626,7 +626,7 @@ function saveSettings() {
         title: 'Save Application Settings',
         msg: 'Are you sure you want to apply these global settings changes to the system?',
         icon: 'fa-sliders',
-        color: '#818cf8',
+        color: '#60a5fa',
         btnClass: 'btn-primary',
         btnIcon: 'fa-check',
         btnText: 'Apply Settings',

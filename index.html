@@ -22,9 +22,9 @@
                         primary: {
                             50: '#eef2ff',
                             100: '#e0e7ff',
-                            500: '#6366f1',
-                            600: '#4f46e5',
-                            700: '#4338ca',
+                            500: '#3b82f6',
+                            600: '#2563eb',
+                            700: '#1d4ed8',
                         },
                         dark: '#0f172a',
                     }
@@ -64,7 +64,7 @@
         .blob-1 {
             width: 600px;
             height: 600px;
-            background: radial-gradient(circle, #6366f1, #8b5cf6);
+            background: radial-gradient(circle, #3b82f6, #2563eb);
             top: -200px;
             left: -150px;
             animation-delay: 0s;
@@ -82,7 +82,7 @@
         .blob-3 {
             width: 300px;
             height: 300px;
-            background: radial-gradient(circle, #38bdf8, #6366f1);
+            background: radial-gradient(circle, #38bdf8, #3b82f6);
             top: 50%;
             left: 60%;
             animation-delay: -5s;
@@ -137,7 +137,7 @@
 
         /* ── Logo badge ── */
         .logo-badge {
-            background: linear-gradient(135deg, #6366f1, #8b5cf6);
+            background: linear-gradient(135deg, #3b82f6, #2563eb);
             box-shadow: 0 8px 32px rgba(99, 102, 241, 0.5);
         }
 
@@ -166,7 +166,7 @@
 
         .login-input:focus {
             background: rgba(15, 23, 42, 0.8);
-            border-color: #6366f1;
+            border-color: #3b82f6;
             box-shadow:
                 0 0 0 4px rgba(99, 102, 241, 0.15),
                 0 0 20px rgba(99, 102, 241, 0.1);
@@ -174,7 +174,7 @@
 
         /* ── Login button ── */
         .login-btn {
-            background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+            background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
             border: 1px solid rgba(255, 255, 255, 0.1);
             box-shadow:
                 0 8px 32px rgba(99, 102, 241, 0.4),
@@ -424,7 +424,7 @@
                     <label for="password" class="block text-sm font-semibold text-slate-300">
                         Password
                     </label>
-                    <a href="#" class="text-xs text-indigo-400 hover:text-indigo-300 font-medium transition-colors">
+                    <a href="#" class="text-xs text-blue-400 hover:text-blue-300 font-medium transition-colors">
                         Forgot password?
                     </a>
                 </div>
@@ -443,7 +443,7 @@
             <!-- Remember Me -->
             <div class="flex items-center gap-3 mb-7">
                 <input type="checkbox" id="remember" name="remember" class="w-4 h-4 rounded"
-                    style="accent-color: #6366f1; cursor: pointer;">
+                    style="accent-color: #3b82f6; cursor: pointer;">
                 <label for="remember"
                     class="text-sm text-slate-400 cursor-pointer select-none hover:text-slate-300 transition-colors">
                     Keep me signed in
@@ -550,7 +550,7 @@
         document.querySelectorAll('.login-input').forEach(input => {
             input.addEventListener('focus', () => {
                 input.previousElementSibling &&
-                    (input.previousElementSibling.style.color = '#818cf8');
+                    (input.previousElementSibling.style.color = '#60a5fa');
             });
             input.addEventListener('blur', () => {
                 input.previousElementSibling &&

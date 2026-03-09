@@ -58,7 +58,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
                 // Clear active states
                 document.querySelectorAll(`.${tabGroupClass}[data-group="${group}"]`).forEach(t => {
-                    t.classList.remove('text-indigo-600', 'border-indigo-600', 'bg-indigo-50/50', 'bg-gradient-primary', 'text-white', 'shadow-md');
+                    t.classList.remove('text-blue-600', 'border-blue-600', 'bg-blue-50/50', 'bg-gradient-primary', 'text-white', 'shadow-md');
                     t.classList.add('text-slate-500', 'border-transparent', 'hover:text-slate-700', 'hover:border-slate-300');
                     if (tabGroupClass === 'term-tab') {
                         t.classList.add('hover:bg-slate-50');
@@ -71,7 +71,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     tab.classList.add('bg-gradient-primary', 'text-white', 'shadow-md');
                 } else {
                     tab.classList.remove('text-slate-500', 'border-transparent', 'hover:text-slate-700', 'hover:border-slate-300');
-                    tab.classList.add('text-indigo-600', 'border-indigo-600', 'bg-indigo-50');
+                    tab.classList.add('text-blue-600', 'border-blue-600', 'bg-blue-50');
                 }
 
                 // Hide contents

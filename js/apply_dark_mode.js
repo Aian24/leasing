@@ -28,17 +28,17 @@ content = content.replace(/\bbg-slate-200(?! dark:)\b/g, 'bg-slate-200 dark:bg-s
 content = content.replace(/\bbg-slate-50\/50(?! dark:)\b/g, 'bg-slate-50/50 dark:bg-slate-800/50');
 
 // Indigo bgs that might need to be darker
-content = content.replace(/\bbg-indigo-50\/50(?! dark:)\b/g, 'bg-indigo-50/50 dark:bg-indigo-900/40');
-content = content.replace(/\bbg-indigo-50\/30(?! dark:)\b/g, 'bg-indigo-50/30 dark:bg-indigo-900/20');
-content = content.replace(/\bbg-indigo-50(?! dark:)\b/g, 'bg-indigo-50 dark:bg-indigo-900/40');
-content = content.replace(/\bbg-indigo-100(?! dark:)\b/g, 'bg-indigo-100 dark:bg-indigo-900/60');
+content = content.replace(/\bbg-blue-50\/50(?! dark:)\b/g, 'bg-blue-50/50 dark:bg-blue-900/40');
+content = content.replace(/\bbg-blue-50\/30(?! dark:)\b/g, 'bg-blue-50/30 dark:bg-blue-900/20');
+content = content.replace(/\bbg-blue-50(?! dark:)\b/g, 'bg-blue-50 dark:bg-blue-900/40');
+content = content.replace(/\bbg-blue-100(?! dark:)\b/g, 'bg-blue-100 dark:bg-blue-900/60');
 
 // hover colors
 content = content.replace(/\bhover:text-slate-800(?! dark:)\b/g, 'hover:text-slate-800 dark:hover:text-slate-100');
 content = content.replace(/\bhover:text-slate-700(?! dark:)\b/g, 'hover:text-slate-700 dark:hover:text-slate-200');
 content = content.replace(/\bhover:bg-slate-50(?! dark:)\b/g, 'hover:bg-slate-50 dark:hover:bg-slate-700');
 content = content.replace(/\bhover:bg-slate-100(?! dark:)\b/g, 'hover:bg-slate-100 dark:hover:bg-slate-700');
-content = content.replace(/\bhover:bg-indigo-50(?! dark:)\b/g, 'hover:bg-indigo-50 dark:hover:bg-indigo-900/60');
+content = content.replace(/\bhover:bg-blue-50(?! dark:)\b/g, 'hover:bg-blue-50 dark:hover:bg-blue-900/60');
 content = content.replace(/\bhover:bg-white\/50(?! dark:)\b/g, 'hover:bg-white/50 dark:hover:bg-slate-700/50');
 
 fs.writeFileSync('c:/xampp/htdocs/Lease/index.html', content);

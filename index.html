@@ -512,13 +512,14 @@
 
             setLoading(false);
 
-            // Demo: accept "admin" / "admin123"
-            if (username === 'admin' && password === 'admin123') {
+            // Demo: accept 'admin'/'admin123' and 'user'/'user123'
+            if ((username === 'admin' && password === 'admin123') || (username === 'user' && password === 'user123')) {
                 // Redirect to dashboard
                 loginBtn.innerHTML = '<i class="fa-solid fa-check mr-2"></i> Success!';
                 loginBtn.style.background = 'linear-gradient(135deg, #22c55e, #16a34a)';
                 loginBtn.style.boxShadow = '0 8px 32px rgba(34, 197, 94, 0.4)';
-                setTimeout(() => { window.location.href = 'admin/index.html'; }, 700);
+                const redirectUrl = username === 'admin' ? 'admin/index.html' : 'user/index.html';
+                setTimeout(() => { window.location.href = redirectUrl; }, 700);
             } else {
                 showError('Invalid username or password. Please try again.');
                 // Shake the card subtly

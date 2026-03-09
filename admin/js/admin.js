@@ -19,8 +19,8 @@ const DB = {
         { icon: 'fa-key', color: 'rgba(139,92,246,0.2)', text: '#c4b5fd', desc: '<b>plim</b> reset password successfully', time: 'Yesterday' },
     ],
     pages: [
-        { id: 1, name: 'Home / Dashboard', slug: 'index.html', visible: true, lastEdit: '2026-03-01', editedBy: 'msantos' },
-        { id: 2, name: 'Login Page', slug: 'login.html', visible: true, lastEdit: '2026-03-06', editedBy: 'msantos' },
+        { id: 1, name: 'Home / Dashboard', slug: 'user/index.html', visible: true, lastEdit: '2026-03-01', editedBy: 'msantos' },
+        { id: 2, name: 'Login Page', slug: 'index.html', visible: true, lastEdit: '2026-03-06', editedBy: 'msantos' },
         { id: 3, name: 'Lessee Management', slug: '#lessee', visible: true, lastEdit: '2026-02-28', editedBy: 'jdelacruz' },
         { id: 4, name: 'Stall Configuration', slug: '#stall', visible: true, lastEdit: '2026-02-25', editedBy: 'areyes' },
         { id: 5, name: 'Lease Terms & Dates', slug: '#terms', visible: false, lastEdit: '2026-02-20', editedBy: 'jdelacruz' },

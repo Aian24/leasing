@@ -11,12 +11,12 @@ const DB = {
         { id: 6, name: 'Carlos Tan', username: 'ctan', email: 'carlos@leasepro.ph', role: 'Manager', status: 'Suspended', lastLogin: '2026-02-28 16:45', avatar: null },
     ],
     activities: [
-        { icon: 'fa-user-plus', color: 'rgba(99,102,241,0.2)', text: '#fff', desc: '<b>msantos</b> created a new lease contract for <b>Footwear Shop</b>', time: '2 min ago' },
+        { icon: 'fa-user-plus', color: 'rgba(59, 130, 246,0.2)', text: '#fff', desc: '<b>msantos</b> created a new lease contract for <b>Footwear Shop</b>', time: '2 min ago' },
         { icon: 'fa-pen-to-square', color: 'rgba(245,158,11,0.2)', text: '#fcd34d', desc: '<b>jdelacruz</b> updated stall config for <b>BLOCK4-11</b>', time: '18 min ago' },
         { icon: 'fa-user-xmark', color: 'rgba(239,68,68,0.2)', text: '#fca5a5', desc: '<b>ctan</b> account was suspended by administrator', time: '1 hr ago' },
         { icon: 'fa-right-to-bracket', color: 'rgba(34,197,94,0.2)', text: '#86efac', desc: '<b>areyes</b> logged in from <b>192.168.1.5</b>', time: '2 hr ago' },
         { icon: 'fa-file-invoice', color: 'rgba(56,189,248,0.2)', text: '#7dd3fc', desc: 'System generated monthly billing for <b>12 tenants</b>', time: '5 hr ago' },
-        { icon: 'fa-key', color: 'rgba(139,92,246,0.2)', text: '#c4b5fd', desc: '<b>plim</b> reset password successfully', time: 'Yesterday' },
+        { icon: 'fa-key', color: 'rgba(37, 99, 235,0.2)', text: '#c4b5fd', desc: '<b>plim</b> reset password successfully', time: 'Yesterday' },
     ],
     pages: [
         { id: 1, name: 'Home / Dashboard', slug: 'user/index.html', visible: true, lastEdit: '2026-03-01', editedBy: 'msantos' },
@@ -262,7 +262,7 @@ function saveUser() {
             } else {
                 DB.users.push({ id: nextUserId++, name, username: uname, email, role, status, lastLogin: 'Never', avatar: null });
                 showToast(`User <b>${name}</b> created.`, 'success');
-                logActivity('fa-user-plus', 'rgba(99,102,241,0.2)', '#a5b4fc', `<b>Admin</b> created user <b>${name}</b>`, 'Just now');
+                logActivity('fa-user-plus', 'rgba(59, 130, 246,0.2)', '#a5b4fc', `<b>Admin</b> created user <b>${name}</b>`, 'Just now');
             }
             closeUserModal();
             renderUsersTable();
@@ -299,7 +299,7 @@ function renderPagesTable(filter = '') {
     tbody.innerHTML = data.map(p => `
         <tr>
             <td style="font-weight:700">${p.name}</td>
-            <td><code style="font-size:0.75rem;color:#60a5fa;background:rgba(99,102,241,0.1);padding:3px 8px;border-radius:6px">${p.slug}</code></td>
+            <td><code style="font-size:0.75rem;color:#60a5fa;background:rgba(59, 130, 246,0.1);padding:3px 8px;border-radius:6px">${p.slug}</code></td>
             <td>
                 <label class="toggle-switch">
                     <input type="checkbox" ${p.visible ? 'checked' : ''} onchange="togglePage(${p.id}, this.checked)">
@@ -373,7 +373,7 @@ function savePage() {
             p.lastEdit = new Date().toISOString().slice(0, 10);
             p.editedBy = 'Admin';
             showToast(`Page <b>${name}</b> updated successfully.`, 'success');
-            logActivity('fa-layer-group', 'rgba(139,92,246,0.2)', '#c4b5fd', `<b>Admin</b> edited page details for <b>${name}</b>`, 'Just now');
+            logActivity('fa-layer-group', 'rgba(37, 99, 235,0.2)', '#c4b5fd', `<b>Admin</b> edited page details for <b>${name}</b>`, 'Just now');
             closePageModal();
             renderPagesTable();
         }
@@ -590,7 +590,7 @@ function saveAnnouncement() {
             } else {
                 DB.announcements.unshift({ id: nextAnnId++, title, body, type, roles, expires, publishedBy: 'Admin', publishedAt: new Date().toISOString().slice(0, 10) });
                 showToast(`Announcement published.`, 'success');
-                logActivity('fa-bullhorn', 'rgba(99,102,241,0.2)', '#a5b4fc', `<b>Admin</b> published announcement: <b>${title}</b>`, 'Just now');
+                logActivity('fa-bullhorn', 'rgba(59, 130, 246,0.2)', '#a5b4fc', `<b>Admin</b> published announcement: <b>${title}</b>`, 'Just now');
             }
             closeAnnModal();
             renderAnnouncements();
@@ -619,7 +619,7 @@ function deleteAnnouncement(id) {
 // ── Settings actions ──────────────────────────────────────────
 function saveSetting(key, val) {
     showToast(`Setting ${key} ${val ? 'enabled' : 'disabled'}.`, val ? 'success' : 'warning');
-    logActivity('fa-sliders', 'rgba(139,92,246,0.2)', '#c4b5fd', `<b>Admin</b> changed config: <b>${key}</b>`, 'Just now');
+    logActivity('fa-sliders', 'rgba(37, 99, 235,0.2)', '#c4b5fd', `<b>Admin</b> changed config: <b>${key}</b>`, 'Just now');
 }
 function saveSettings() {
     confirmAction({

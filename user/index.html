@@ -206,32 +206,32 @@
                                 <div class="space-y-2">
                                     <label class="text-sm font-bold text-slate-700 dark:text-slate-200">Account
                                         Name</label>
-                                    <input type="text"
+                                    <input type="text" id="inp-account-name"
                                         class="form-input font-inter w-full px-4 py-3 rounded-xl text-[15px] text-slate-800 dark:text-slate-100"
-                                        value="MASTURA M. FOOTWEAR SHOP">
+                                        value="">
                                 </div>
                                 <div class="space-y-2">
                                     <label
                                         class="text-sm font-bold text-slate-700 dark:text-slate-200">Tradename/Storename</label>
-                                    <input type="text"
+                                    <input type="text" id="inp-trade-name"
                                         class="form-input font-inter w-full px-4 py-3 rounded-xl text-[15px] text-slate-800 dark:text-slate-100"
-                                        value="MASTURA M. FOOTWEAR SHOP">
+                                        value="">
                                 </div>
 
                                 <div class="md:col-span-2 space-y-2">
                                     <label class="text-sm font-bold text-slate-700 dark:text-slate-200">Lessee
                                         Address</label>
-                                    <input type="text"
+                                    <input type="text" id="inp-lessee-addr"
                                         class="form-input font-inter w-full px-4 py-3 rounded-xl text-[15px] text-slate-800 dark:text-slate-100"
-                                        value="3310 Mohagany St. Kiko Rd. Camarin Caloocan City">
+                                        value="">
                                 </div>
 
                                 <div class="space-y-2">
                                     <label class="text-sm font-bold text-slate-700 dark:text-slate-200">Use of Leased
                                         Premises</label>
-                                    <input type="text"
+                                    <input type="text" id="inp-use"
                                         class="form-input font-inter w-full px-4 py-3 rounded-xl text-[15px] text-slate-800 dark:text-slate-100"
-                                        value="Footwear">
+                                        value="">
                                 </div>
                                 <div class="space-y-2">
                                     <label
@@ -245,15 +245,15 @@
                                 <div class="space-y-2">
                                     <label class="text-sm font-bold text-slate-700 dark:text-slate-200">Email
                                         Address</label>
-                                    <input type="email"
+                                    <input type="email" id="inp-email"
                                         class="form-input font-inter w-full px-4 py-3 rounded-xl text-[15px] text-slate-800 dark:text-slate-100"
-                                        placeholder="mastura@example.com">
+                                        placeholder="user@example.com">
                                 </div>
                                 <div class="grid grid-cols-2 gap-4">
                                     <div class="space-y-2">
                                         <label
                                             class="text-sm font-bold text-slate-700 dark:text-slate-200">Mobile</label>
-                                        <input type="text"
+                                        <input type="text" id="inp-mobile"
                                             class="form-input font-inter w-full px-4 py-3 rounded-xl text-[15px] text-slate-800 dark:text-slate-100"
                                             placeholder="+63 900 000 0000">
                                     </div>
@@ -369,9 +369,9 @@
                                         <label
                                             class="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Proprietor
                                             Name</label>
-                                        <input type="text"
+                                        <input type="text" id="inp-prop-name"
                                             class="form-input font-inter w-full px-4 py-3 rounded-xl text-sm font-semibold"
-                                            value="MASTURA M. MALAWAD">
+                                            value="">
                                     </div>
                                     <div class="space-y-1.5">
                                         <label
@@ -492,17 +492,11 @@
                                                 class="block text-xs font-bold text-blue-900 uppercase tracking-wider mb-2">Stall
                                                 Code</label>
                                             <div class="flex gap-2">
-                                                <input type="text" value="IMC.BLOCK4 - 11"
+                                                <input type="text" id="inp-stall-code" value="" placeholder="e.g. 2B008"
                                                     class="form-input font-inter flex-1 px-4 py-2.5 bg-white dark:bg-slate-800 border border-blue-200 rounded-xl text-[15px] font-bold text-blue-900">
-                                                <button
-                                                    class="px-3.5 bg-white dark:bg-slate-800 border border-blue-200 rounded-xl hover:bg-blue-50 dark:bg-blue-900/40 text-blue-600 shadow-sm transition"><i
-                                                        class="fa-solid fa-plus"></i></button>
-                                                <button
-                                                    class="px-3.5 bg-white dark:bg-slate-800 border border-blue-200 rounded-xl hover:bg-blue-50 dark:bg-blue-900/40 text-blue-600 shadow-sm transition"><i
-                                                        class="fa-solid fa-code"></i></button>
-                                                <button
-                                                    class="px-3.5 bg-rose-50 border border-rose-200 rounded-xl hover:bg-rose-100 text-rose-600 shadow-sm transition"><i
-                                                        class="fa-solid fa-xmark"></i></button>
+                                                <button id="btn-browse-stalls"
+                                                    class="px-4 py-2.5 bg-blue-600 border border-blue-600 rounded-xl hover:bg-blue-700 text-white shadow-sm transition flex items-center justify-center gap-2 text-sm font-bold whitespace-nowrap"><i
+                                                        class="fa-solid fa-folder-open"></i> Browse</button>
                                             </div>
                                         </div>
                                     </div>
@@ -512,7 +506,7 @@
                                             <label
                                                 class="text-xs font-bold text-slate-500 dark:text-slate-400 tracking-wider">Stall
                                                 Number</label>
-                                            <input type="text" value="BLOCK4 - 11"
+                                            <input type="text" id="inp-stall-num" value="" placeholder="-"
                                                 class="form-input font-inter w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-sm font-medium text-slate-600 dark:text-slate-300"
                                                 readonly>
                                         </div>
@@ -544,8 +538,8 @@
                                         class="flex items-center justify-between p-4 bg-gradient-to-r from-slate-800 to-slate-900 rounded-2xl mt-4 shadow-lg text-white">
                                         <label class="text-lg font-bold tracking-wide">Total Sqm</label>
                                         <div class="flex items-center gap-2">
-                                            <input type="number" step="0.01" value="4.00"
-                                                class="w-24 px-3 py-1.5 bg-white/ border border-white/20 rounded-lg text-lg font-bold text-right focus:border-white focus:outline-none focus:bg-white/ transition text-white">
+                                            <input type="number" id="inp-area" step="0.01" value="" placeholder="0.00"
+                                                class="w-24 px-3 py-1.5 bg-white/ border border-white/20 rounded-lg text-lg font-bold text-right focus:border-white focus:outline-none focus:bg-white/ transition text-white placeholder-white/50">
                                             <span class="text-slate-400 font-medium text-sm">sq.m.</span>
                                         </div>
                                     </div>
@@ -1023,20 +1017,159 @@
             <!-- Footer empty space for scroll -->
             <div class="h-24"></div>
         </div>
+        <!-- Stall Record Browse Modal -->
+        <div id="stall-modal"
+            class="hidden fixed inset-0 z-[100] flex items-center justify-center bg-slate-900/40 backdrop-blur-sm p-4">
+            <div
+                class="bg-white dark:bg-slate-800 w-full max-w-4xl rounded-2xl shadow-2xl flex flex-col max-h-[90vh] border border-slate-200 dark:border-slate-700 animate-fade-in-up">
+                <div
+                    class="p-6 border-b border-slate-100 dark:border-slate-700 flex justify-between items-center bg-slate-50 dark:bg-slate-800/80 rounded-t-2xl">
+                    <h2 class="text-xl font-bold text-slate-800 dark:text-white flex items-center gap-3">
+                        <i class="fa-solid fa-list-ul text-blue-500"></i> Select Stall Record
+                    </h2>
+                    <button class="close-stall-modal text-slate-400 hover:text-rose-500 transition-colors">
+                        <i class="fa-solid fa-xmark text-2xl"></i>
+                    </button>
+                </div>
+                <div class="p-4 border-b border-slate-100 dark:border-slate-700 bg-white dark:bg-slate-800 relative">
+                    <i class="fa-solid fa-magnifying-glass absolute left-8 top-1/2 -translate-y-1/2 text-slate-400"></i>
+                    <input type="text" id="stall-search" placeholder="Search by Space Code, Company, or Name..."
+                        class="w-full pl-10 pr-4 py-3 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl focus:outline-none focus:border-blue-500 text-slate-800 dark:text-slate-100">
+                </div>
+                <div class="flex-1 overflow-y-auto p-2">
+                    <table class="w-full text-left border-collapse">
+                        <thead>
+                            <tr
+                                class="text-xs font-bold text-slate-400 uppercase tracking-wider bg-slate-50 dark:bg-slate-800/50">
+                                <th class="p-4 rounded-tl-xl">Space Code</th>
+                                <th class="p-4">Company / Name</th>
+                                <th class="p-4">Status</th>
+                            </tr>
+                        </thead>
+                        <tbody id="stall-modal-tbody" class="text-sm">
+                            <tr>
+                                <td colspan="3" class="p-8 text-center text-slate-500">
+                                    <i class="fa-solid fa-spinner fa-spin mr-2"></i> Loading records...
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <div
+                    class="p-4 border-t border-slate-100 dark:border-slate-700 flex justify-end bg-slate-50 dark:bg-slate-800/80 rounded-b-2xl">
+                    <button
+                        class="close-stall-modal px-6 py-2.5 bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-200 hover:bg-slate-300 dark:hover:bg-slate-600 rounded-xl font-bold transition-colors">
+                        Cancel
+                    </button>
+                </div>
+            </div>
+        </div>
     </main>
 
     <script>
         // Inline small behaviour adjustment exclusively for the checkbox opacity toggle
-        document.querySelector('input[type="checkbox"]').addEventListener('change', function () {
+        document.querySelector('input[type="checkbox"]')?.addEventListener('change', function () {
             const fields = document.getElementById('rent-free-fields');
             if (fields) {
-                if (this.checked) {
-                    fields.classList.remove('opacity-40', 'pointer-events-none');
-                } else {
-                    fields.classList.add('opacity-40', 'pointer-events-none');
-                }
+                if (this.checked) fields.classList.remove('opacity-40', 'pointer-events-none');
+                else fields.classList.add('opacity-40', 'pointer-events-none');
             }
         });
+
+        // ── Stall Record Modal Script ──
+        let allStalls = [];
+
+        document.getElementById('btn-browse-stalls')?.addEventListener('click', (e) => {
+            e.preventDefault();
+            document.getElementById('stall-modal').classList.remove('hidden');
+            loadStallRecords();
+        });
+
+        document.querySelectorAll('.close-stall-modal').forEach(btn => {
+            btn.addEventListener('click', () => {
+                document.getElementById('stall-modal').classList.add('hidden');
+            });
+        });
+
+        document.getElementById('stall-search')?.addEventListener('input', (e) => {
+            const q = e.target.value.toLowerCase();
+            const res = allStalls.filter(s =>
+                (s.space_code || '').toLowerCase().includes(q) ||
+                (s.company_name || '').toLowerCase().includes(q) ||
+                (s.owner_lessee_name || '').toLowerCase().includes(q) ||
+                (s.trade_name || '').toLowerCase().includes(q)
+            );
+            renderStalls(res);
+        });
+
+        async function loadStallRecords() {
+            try {
+                const res = await fetch('/Lease/api/lessees_csv.php?action=list&limit=1000');
+                const json = await res.json();
+                if (json.success && json.data) {
+                    allStalls = json.data;
+                    renderStalls(allStalls);
+                }
+            } catch (e) {
+                document.getElementById('stall-modal-tbody').innerHTML = `<tr><td colspan="3" class="p-8 text-center text-rose-500">Error loading records.</td></tr>`;
+            }
+        }
+
+        function escapeHTML(s) {
+            if (!s) return '—';
+            return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+        }
+
+        function renderStalls(list) {
+            const tbody = document.getElementById('stall-modal-tbody');
+            if (!list.length) {
+                tbody.innerHTML = `<tr><td colspan="3" class="p-8 text-center text-slate-500">No records found.</td></tr>`;
+                return;
+            }
+
+            tbody.innerHTML = list.map(item => {
+                // Determine color based on status (Active = Occupied/Red, else = Available/Green)
+                const isOccupied = item.status === 'Active';
+                const statusColor = isOccupied ? 'text-rose-500 font-bold bg-rose-50 dark:bg-rose-500/10 px-2 py-1 inline-block rounded-md' : 'text-emerald-500 font-bold bg-emerald-50 dark:bg-emerald-500/10 px-2 py-1 inline-block rounded-md';
+                const statusText = isOccupied ? 'Occupied' : 'Available';
+
+                const trClass = isOccupied
+                    ? "border-b border-slate-100 dark:border-slate-700/50 opacity-60 cursor-not-allowed bg-slate-50/50 dark:bg-slate-800/50"
+                    : "border-b border-slate-100 dark:border-slate-700/50 hover:bg-slate-50 dark:hover:bg-slate-700/30 cursor-pointer transition-colors";
+                const onClickAttr = isOccupied ? "" : `onclick='selectStall(\`${btoa(encodeURIComponent(JSON.stringify(item)))}\`)'`;
+
+                return `<tr class="${trClass}" ${onClickAttr}>
+                    <td class="p-4 font-bold text-blue-600 dark:text-blue-400">${escapeHTML(item.space_code)}</td>
+                    <td class="p-4 text-slate-700 dark:text-slate-200">
+                        <div class="font-bold">${escapeHTML(item.company_name)}</div>
+                        <div class="text-[12px] text-slate-500">${escapeHTML(item.trade_name) || escapeHTML(item.owner_lessee_name)}</div>
+                    </td>
+                    <td class="p-4">
+                        <span class="${statusColor}">${statusText}</span>
+                    </td>
+                </tr>`;
+            }).join('');
+        }
+
+        window.selectStall = function (base64Str) {
+            const payload = JSON.parse(decodeURIComponent(atob(base64Str)));
+            document.getElementById('stall-modal').classList.add('hidden');
+
+            // Populate fields
+            if (document.getElementById('inp-stall-code')) document.getElementById('inp-stall-code').value = payload.space_code || '';
+            if (document.getElementById('inp-stall-num')) document.getElementById('inp-stall-num').value = payload.space_code || '-';
+            if (document.getElementById('inp-area')) document.getElementById('inp-area').value = payload.total_area || '';
+
+            if (document.getElementById('inp-account-name')) document.getElementById('inp-account-name').value = payload.company_name || '';
+            if (document.getElementById('inp-trade-name')) document.getElementById('inp-trade-name').value = payload.trade_name || '';
+            if (document.getElementById('inp-lessee-addr')) document.getElementById('inp-lessee-addr').value = payload.business_address || payload.owner_address || '';
+            if (document.getElementById('inp-use')) document.getElementById('inp-use').value = payload.nature_of_business || '';
+            if (document.getElementById('inp-email')) document.getElementById('inp-email').value = payload.email_address || '';
+            if (document.getElementById('inp-mobile')) document.getElementById('inp-mobile').value = payload.contact_nos || '';
+            if (document.getElementById('inp-prop-name')) document.getElementById('inp-prop-name').value = payload.owner_lessee_name || '';
+
+            // Automatically scroll to the primary section if desired, though user is already in form
+        };
     </script>
 </body>
 

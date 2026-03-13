@@ -73,7 +73,7 @@
         .blob-2 {
             width: 450px;
             height: 450px;
-            background: radial-gradient(circle, #a855f7, #ec4899);
+            background: radial-gradient(circle, #2563eb, #ec4899);
             bottom: -150px;
             right: -100px;
             animation-delay: -3s;
@@ -103,8 +103,8 @@
             position: fixed;
             inset: 0;
             background-image:
-                linear-gradient(rgba(99, 102, 241, 0.04) 1px, transparent 1px),
-                linear-gradient(90deg, rgba(99, 102, 241, 0.04) 1px, transparent 1px);
+                linear-gradient(rgba(59, 130, 246, 0.04) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(59, 130, 246, 0.04) 1px, transparent 1px);
             background-size: 50px 50px;
             z-index: 0;
         }
@@ -114,7 +114,7 @@
             background: rgba(15, 23, 42, 0.6);
             backdrop-filter: blur(24px);
             -webkit-backdrop-filter: blur(24px);
-            border: 1px solid rgba(99, 102, 241, 0.2);
+            border: 1px solid rgba(59, 130, 246, 0.2);
             box-shadow:
                 0 32px 80px rgba(0, 0, 0, 0.5),
                 0 0 0 1px rgba(255, 255, 255, 0.04) inset;
@@ -138,13 +138,13 @@
         /* ── Logo badge ── */
         .logo-badge {
             background: linear-gradient(135deg, #3b82f6, #2563eb);
-            box-shadow: 0 8px 32px rgba(99, 102, 241, 0.5);
+            box-shadow: 0 8px 32px rgba(59, 130, 246, 0.5);
         }
 
         /* ── Input fields ── */
         .login-input {
             background: rgba(255, 255, 255, 0.05);
-            border: 1px solid rgba(99, 102, 241, 0.2);
+            border: 1px solid rgba(59, 130, 246, 0.2);
             color: #e2e8f0;
             border-radius: 0.875rem;
             transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
@@ -161,15 +161,15 @@
 
         .login-input:hover {
             background: rgba(255, 255, 255, 0.08);
-            border-color: rgba(99, 102, 241, 0.4);
+            border-color: rgba(59, 130, 246, 0.4);
         }
 
         .login-input:focus {
             background: rgba(15, 23, 42, 0.8);
             border-color: #3b82f6;
             box-shadow:
-                0 0 0 4px rgba(99, 102, 241, 0.15),
-                0 0 20px rgba(99, 102, 241, 0.1);
+                0 0 0 4px rgba(59, 130, 246, 0.15),
+                0 0 20px rgba(59, 130, 246, 0.1);
         }
 
         /* ── Login button ── */
@@ -177,7 +177,7 @@
             background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
             border: 1px solid rgba(255, 255, 255, 0.1);
             box-shadow:
-                0 8px 32px rgba(99, 102, 241, 0.4),
+                0 8px 32px rgba(59, 130, 246, 0.4),
                 0 0 0 1px rgba(255, 255, 255, 0.05) inset;
             color: #fff;
             border-radius: 0.875rem;
@@ -209,7 +209,7 @@
         .login-btn:hover {
             transform: translateY(-2px);
             box-shadow:
-                0 16px 48px rgba(99, 102, 241, 0.5),
+                0 16px 48px rgba(59, 130, 246, 0.5),
                 0 0 0 1px rgba(255, 255, 255, 0.1) inset;
         }
 
@@ -290,7 +290,7 @@
             left: 1rem;
             top: 50%;
             transform: translateY(-50%);
-            color: rgba(99, 102, 241, 0.6);
+            color: rgba(59, 130, 246, 0.6);
             pointer-events: none;
             font-size: 0.9rem;
         }
@@ -298,7 +298,7 @@
         /* ── Decorative divider ── */
         .divider {
             height: 1px;
-            background: linear-gradient(90deg, transparent, rgba(99, 102, 241, 0.3), transparent);
+            background: linear-gradient(90deg, transparent, rgba(59, 130, 246, 0.3), transparent);
         }
 
         /* ── Floating label animation ── */
@@ -330,7 +330,7 @@
         .particle {
             position: fixed;
             border-radius: 50%;
-            background: rgba(99, 102, 241, 0.4);
+            background: rgba(59, 130, 246, 0.4);
             animation: particleDrift linear infinite;
         }
 
@@ -554,7 +554,7 @@
             });
             input.addEventListener('blur', () => {
                 input.previousElementSibling &&
-                    (input.previousElementSibling.style.color = 'rgba(99,102,241,0.6)');
+                    (input.previousElementSibling.style.color = 'rgba(59, 130, 246,0.6)');
             });
         });
     </script>

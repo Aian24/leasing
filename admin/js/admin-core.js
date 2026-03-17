@@ -72,7 +72,7 @@ const GLOBAL_UI = {
             container.innerHTML = '<div class="search-item empty">No matches found</div>';
         } else {
             container.innerHTML = items.map(item => `
-                <div class="search-item" onclick="GLOBAL_UI.navigateTo('${item.type}', '${item.slug || item.id}')">
+                <div class="search-item" onclick="GLOBAL_UI.navigateTo('${item.type}', '${item.slug || item.id}', '${item.page_type || ''}')">
                     <div class="search-title">${this.esc(item.title)}</div>
                     <div class="search-category">${item.type}</div>
                 </div>
@@ -81,12 +81,31 @@ const GLOBAL_UI = {
         container.classList.add('open');
     },
 
-    navigateTo(type, val) {
+    navigateTo(type, val, pageType = '') {
         const path = window.location.pathname;
         const root = path.includes('/overview/') || path.includes('/management/') || path.includes('/system/') || path.includes('/content/') ? '../' : './';
 
         if (type === 'Page') {
-            window.location.href = root + (val.includes('/') ? val : val); // Simple for now
+            if (pageType === 'admin') {
+                // Determine folder for admin pages
+                const folderMap = {
+                    'dashboard.php': 'overview/',
+                    'lessees.php': 'management/',
+                    'users.php': 'management/',
+                    'roles.php': 'management/',
+                    'sessions.php': 'management/',
+                    'announcements.php': 'management/',
+                    'pages.php': 'content/',
+                    'info.php': 'system/',
+                    'logs.php': 'system/',
+                    'settings.php': 'system/'
+                };
+                const folder = folderMap[val] || '';
+                window.location.href = root + folder + val;
+            } else {
+                // Frontend dynamic pages
+                window.location.href = root + '../user/page.php?slug=' + val;
+            }
         } else if (type === 'Lessee') {
             window.location.href = root + 'management/lessees.php?id=' + val;
         }

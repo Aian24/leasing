@@ -2,8 +2,15 @@
 header('Content-Type: application/json');
 require_once __DIR__ . '/../database/config.php';
 
+session_start();
+if (!isset($_SESSION['user_id'])) {
+    echo json_encode(['success' => false, 'message' => 'Unauthorized']);
+    exit;
+}
+
 $action = $_GET['action'] ?? '';
 $pdo = getPDO();
+$userId = $_SESSION['user_id'];
 
 try {
     switch ($action) {
@@ -14,17 +21,21 @@ try {
                 break;
             }
 
-            // Search in Pages
-            $stmt = $pdo->prepare("SELECT page_name as title, slug, 'Page' as type FROM pages WHERE page_name LIKE ? AND is_visible = 1 LIMIT 5");
-            $stmt->execute(['%' . $query . '%']);
-            $pages = $stmt->fetchAll();
+            // Search only in Frontend Pages as requested
+            $stmt = $pdo->prepare("SELECT page_name as title, slug, 'Page' as type FROM pages WHERE page_name LIKE ? AND type = 'frontend' AND is_visible = 1 LIMIT 5");
+            $searchTerm = '%' . $query . '%';
+            $stmt->execute([$searchTerm]);
+            $pages = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
-            // Search in Lessees
-            $stmt = $pdo->prepare("SELECT company_name as title, id, 'Lessee' as type FROM lessees WHERE company_name LIKE ? OR trade_name LIKE ? LIMIT 5");
-            $stmt->execute(['%' . $query . '%', '%' . $query . '%']);
-            $lessees = $stmt->fetchAll();
+            echo json_encode(['success' => true, 'data' => $pages]);
+            break;
 
-            echo json_encode(['success' => true, 'data' => array_merge($pages, $lessees)]);
+        case 'get_lessee':
+            $id = $_GET['id'] ?? 0;
+            $stmt = $pdo->prepare("SELECT * FROM lessees WHERE id = ?");
+            $stmt->execute([$id]);
+            $lessee = $stmt->fetch(PDO::FETCH_ASSOC);
+            echo json_encode(['success' => !!$lessee, 'data' => $lessee]);
             break;
 
         case 'get_notifications':
@@ -40,15 +51,13 @@ try {
             break;
 
         case 'get_profile':
-            // Mocking current user (id 1) for now
-            $stmt = $pdo->prepare("SELECT name, username, email, role, phone, position, department, avatar FROM users WHERE id = 1");
-            $stmt->execute();
+            $stmt = $pdo->prepare("SELECT name, username, email, role, phone, position, department, avatar FROM users WHERE id = ?");
+            $stmt->execute([$userId]);
             echo json_encode(['success' => true, 'data' => $stmt->fetch()]);
             break;
 
         case 'update_profile':
             $data = json_decode(file_get_contents('php://input'), true);
-            $userId = 1;
 
             // 1. Basic Info Update
             $stmt = $pdo->prepare("UPDATE users SET name = ?, email = ?, phone = ? WHERE id = ?");
@@ -82,15 +91,15 @@ try {
             
             $file = $_FILES['avatar'];
             $ext = pathinfo($file['name'], PATHINFO_EXTENSION);
-            $newName = 'avatar_' . 1 . '_' . time() . '.' . $ext;
+            $newName = 'avatar_' . $userId . '_' . time() . '.' . $ext;
             $uploadDir = __DIR__ . '/../uploads/avatars/';
             
             if (!is_dir($uploadDir)) mkdir($uploadDir, 0777, true);
             
             if (move_uploaded_file($file['tmp_name'], $uploadDir . $newName)) {
                 $avatarPath = 'uploads/avatars/' . $newName;
-                $stmt = $pdo->prepare("UPDATE users SET avatar = ? WHERE id = 1");
-                $stmt->execute([$avatarPath]);
+                $stmt = $pdo->prepare("UPDATE users SET avatar = ? WHERE id = ?");
+                $stmt->execute([$avatarPath, $userId]);
                 echo json_encode(['success' => true, 'avatar' => $avatarPath]);
             } else {
                 echo json_encode(['success' => false, 'message' => 'Upload failed']);

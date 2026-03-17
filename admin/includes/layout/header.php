@@ -1,30 +1,26 @@
 <?php
-// --- Dynamic Session Heartbeat ---
-require_once __DIR__ . '/../../../database/config.php';
-$heartbeat_pdo = getPDO();
-$current_uid = 1; // Maria Santos / Admin
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
 
-// Update or create active session for ID 1
+require_once __DIR__ . '/../../../database/config.php';
+
+// Security Redirect
+if (!isset($_SESSION['user_id'])) {
+    header('Location: ../../index.php');
+    exit;
+}
+
+$heartbeat_pdo = getPDO();
+$current_uid = $_SESSION['user_id'];
+
+// Update or create active session
 $heartbeat_stmt = $heartbeat_pdo->prepare("
     UPDATE user_sessions 
     SET last_activity = NOW(), expires_at = DATE_ADD(NOW(), INTERVAL 1 HOUR) 
     WHERE user_id = ? AND is_active = 1
 ");
 $heartbeat_stmt->execute([$current_uid]);
-
-if ($heartbeat_stmt->rowCount() == 0) {
-    // If no active session, create one
-    $heartbeat_pdo->prepare("
-        INSERT INTO user_sessions (user_id, session_token, ip_address, user_agent, browser, platform, expires_at)
-        VALUES (?, ?, ?, ?, ?, ?, DATE_ADD(NOW(), INTERVAL 1 HOUR))
-    ")->execute([
-        $current_uid, 
-        bin2hex(random_bytes(16)), 
-        $_SERVER['REMOTE_ADDR'] ?? '127.0.0.1', 
-        $_SERVER['HTTP_USER_AGENT'] ?? 'Admin Dashboard',
-        'Chrome', 'System',
-    ]);
-}
 ?>
         <!-- Header -->
         <header id="admin-header">
@@ -69,7 +65,7 @@ if ($heartbeat_stmt->rowCount() == 0) {
                              strpos($_SERVER['PHP_SELF'], '/management/') !== false || 
                              strpos($_SERVER['PHP_SELF'], '/system/') !== false || 
                              strpos($_SERVER['PHP_SELF'], '/content/') !== false;
-                    echo $in_sub ? '../../index.html' : '../index.html'; 
+                    echo $in_sub ? '../../logout.php' : '../logout.php'; 
                 ?>" class="btn btn-ghost btn-sm" style="gap:7px">
                     <i class="fa-solid fa-power-off"></i> Logout
                 </a>

@@ -1,3 +1,10 @@
+<?php
+session_start();
+if (!isset($_SESSION['user_id'])) {
+    header('Location: ../index.php');
+    exit;
+}
+?>
 <!DOCTYPE html>
 <html lang="en">
 
@@ -85,18 +92,47 @@
                     <span class="nav-text text-[15px]">Lease Term & Dates</span>
                 </a>
             </nav>
+
+            <div class="mt-10">
+                <p class="text-[11px] font-bold text-slate-400 uppercase tracking-[0.2em] mb-4 px-2">Other Pages</p>
+                <nav class="space-y-2">
+                    <?php
+                    require_once '../database/config.php';
+                    $pdo = getPDO();
+                    $stmt = $pdo->query("SELECT * FROM pages WHERE type = 'frontend' AND is_visible = 1 ORDER BY page_name ASC");
+                    $pages = $stmt->fetchAll();
+                    foreach($pages as $p):
+                    ?>
+                    <a href="page.php?slug=<?php echo htmlspecialchars($p['slug']); ?>"
+                        class="text-slate-500 dark:text-slate-400 font-medium hover:bg-slate-50 dark:bg-slate-800/50 flex items-center gap-4 px-4 py-3 rounded-2xl transition-all">
+                        <div class="w-9 h-9 rounded-xl flex items-center justify-center text-lg">
+                            <i class="fa-solid fa-file-lines"></i>
+                        </div>
+                        <span class="text-[15px]"><?php echo htmlspecialchars($p['page_name']); ?></span>
+                    </a>
+                    <?php endforeach; ?>
+                    <a href="../logout.php"
+                        class="text-rose-500 hover:text-rose-600 font-bold hover:bg-rose-50 dark:hover:bg-rose-500/10 flex items-center gap-4 px-4 py-3 rounded-2xl transition-all">
+                        <div class="w-9 h-9 rounded-xl flex items-center justify-center text-lg">
+                            <i class="fa-solid fa-power-off"></i>
+                        </div>
+                        <span class="text-[15px]">Sign Out</span>
+                    </a>
+                </nav>
+            </div>
         </div>
 
         <!-- Bottom Profille -->
         <div class="p-6">
-            <div
-                class="bg-blue-50 dark:bg-blue-900/40/50 dark:bg-blue-900/40 rounded-2xl p-4 flex items-center gap-4 border border-blue-100/50 transition hover:bg-blue-50 dark:bg-blue-900/40 cursor-pointer">
-                <img src="https://ui-avatars.com/api/?name=Admin+User&background=4f46e5&color=fff&rounded=true"
-                    class="w-10 h-10 rounded-full shadow-sm" alt="User">
-                <div>
-                    <p class="text-sm font-bold text-slate-800 dark:text-slate-100">Admin User</p>
-                    <p class="text-xs text-blue-500 font-medium">Administrator</p>
+            <div id="user-profile-chip"
+                class="bg-blue-50 dark:bg-blue-900/40 rounded-2xl p-4 flex items-center gap-4 border border-blue-100/50 transition hover:bg-blue-100 dark:hover:bg-blue-800/50 cursor-pointer group">
+                <img id="user-avatar" src="https://ui-avatars.com/api/?name=<?php echo urlencode($_SESSION['name']); ?>&background=4f46e5&color=fff&rounded=true"
+                    class="w-10 h-10 rounded-full shadow-sm group-hover:ring-2 group-hover:ring-blue-400 transition-all" alt="User">
+                <div class="flex-1 overflow-hidden">
+                    <p id="user-name" class="text-sm font-bold text-slate-800 dark:text-slate-100 truncate"><?php echo htmlspecialchars($_SESSION['name']); ?></p>
+                    <p id="user-role" class="text-xs text-blue-500 font-medium italic"><?php echo htmlspecialchars($_SESSION['role']); ?></p>
                 </div>
+                <i class="fa-solid fa-gear text-slate-400 group-hover:text-blue-500 transition-colors"></i>
             </div>
         </div>
     </aside>
@@ -105,7 +141,7 @@
     <main class="flex-1 flex flex-col h-screen overflow-hidden w-full relative">
         <!-- Floating Glass Header -->
         <header
-            class="h-20 flex items-center justify-between px-6 lg:px-10 shrink-0 z-40 mt-4 mx-4 lg:mx-8 premium-card border-none bg-white/60 dark:bg-slate-800/60">
+            class="h-20 flex items-center justify-between px-6 lg:px-10 shrink-0 z-[60] mt-4 mx-4 lg:mx-8 premium-card !overflow-visible border-none bg-white/60 dark:bg-slate-800/60">
             <div class="flex items-center gap-5">
                 <button id="open-sidebar"
                     class="lg:hidden text-slate-500 dark:text-slate-400 hover:text-blue-600 bg-white dark:bg-slate-700 shadow-sm p-3 rounded-xl transition">
@@ -124,23 +160,19 @@
             </div>
 
             <div class="flex items-center gap-4">
-                <div class="hidden sm:flex relative">
+                <div class="hidden sm:flex relative" id="search-wrapper">
                     <i
-                        class="fa-solid fa-magnifying-glass absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 dark:text-slate-500 dark:text-slate-400"></i>
-                    <input type="text" placeholder="Quick search..."
-                        class="pl-11 pr-4 py-2.5 bg-white/80 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700/50 dark:border-slate-700/50 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 dark:text-white transition-all w-64 shadow-sm">
+                        class="fa-solid fa-magnifying-glass absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 dark:text-slate-500"></i>
+                    <input type="text" id="global-search" placeholder="Quick search..."
+                        class="pl-11 pr-4 py-2.5 bg-white/80 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700/50 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 dark:text-white transition-all w-64 shadow-sm"
+                        autocomplete="off">
+                    <!-- Search Results -->
+                    <div id="search-results" class="dropdown-menu search-dropdown"></div>
                 </div>
                 <!-- Dark Mode Toggle -->
                 <button id="theme-toggle"
                     class="relative flex items-center justify-center w-11 h-11 bg-white dark:bg-slate-800 border border-slate-100 dark:border-slate-700 text-slate-500 dark:text-slate-400 rounded-xl hover:text-blue-600 dark:hover:text-blue-400 hover:shadow-md transition-all shadow-sm">
                     <i id="theme-icon" class="fa-solid fa-moon text-[1.1rem]"></i>
-                </button>
-                <!-- Notifications -->
-                <button
-                    class="relative flex items-center justify-center w-11 h-11 bg-white dark:bg-slate-800 border border-slate-100 dark:border-slate-700 text-slate-500 dark:text-slate-400 rounded-xl hover:text-blue-600 dark:hover:text-blue-400 hover:shadow-md transition-all shadow-sm group">
-                    <i class="fa-regular fa-bell text-[1.1rem] group-hover:animate-bounce"></i>
-                    <span
-                        class="absolute top-2 right-2.5 w-2 h-2 bg-rose-500 rounded-full border-2 border-white dark:border-slate-800"></span>
                 </button>
             </div>
         </header>
@@ -208,14 +240,14 @@
                                         Name</label>
                                     <input type="text" id="inp-account-name"
                                         class="form-input font-inter w-full px-4 py-3 rounded-xl text-[15px] text-slate-800 dark:text-slate-100"
-                                        value="">
+                                        placeholder="Enter Account Name" value="">
                                 </div>
                                 <div class="space-y-2">
                                     <label
                                         class="text-sm font-bold text-slate-700 dark:text-slate-200">Tradename/Storename</label>
                                     <input type="text" id="inp-trade-name"
                                         class="form-input font-inter w-full px-4 py-3 rounded-xl text-[15px] text-slate-800 dark:text-slate-100"
-                                        value="">
+                                        placeholder="Enter Tradename/Storename" value="">
                                 </div>
 
                                 <div class="md:col-span-2 space-y-2">
@@ -223,7 +255,7 @@
                                         Address</label>
                                     <input type="text" id="inp-lessee-addr"
                                         class="form-input font-inter w-full px-4 py-3 rounded-xl text-[15px] text-slate-800 dark:text-slate-100"
-                                        value="">
+                                        placeholder="Enter Lessee Address" value="">
                                 </div>
 
                                 <div class="space-y-2">
@@ -231,13 +263,13 @@
                                         Premises</label>
                                     <input type="text" id="inp-use"
                                         class="form-input font-inter w-full px-4 py-3 rounded-xl text-[15px] text-slate-800 dark:text-slate-100"
-                                        value="">
+                                        placeholder="Enter Use of Premises" value="">
                                 </div>
                                 <div class="space-y-2">
                                     <label
                                         class="text-sm font-bold text-slate-700 dark:text-slate-200 px-1 border-l-2 border-blue-400">Tax
                                         Identification No</label>
-                                    <input type="text"
+                                    <input type="text" id="inp-tin"
                                         class="form-input font-inter w-full px-4 py-3 rounded-xl text-[15px] text-slate-800 dark:text-slate-100"
                                         placeholder="e.g. 123-456-789-000">
                                 </div>
@@ -260,7 +292,7 @@
                                     <div class="space-y-2">
                                         <label
                                             class="text-sm font-bold text-slate-700 dark:text-slate-200">Landline</label>
-                                        <input type="text"
+                                        <input type="text" id="inp-landline"
                                             class="form-input font-inter w-full px-4 py-3 rounded-xl text-[15px] text-slate-800 dark:text-slate-100"
                                             placeholder="(02) 8000 0000">
                                     </div>
@@ -346,16 +378,16 @@
                                         <label
                                             class="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">President
                                             Name</label>
-                                        <input type="text"
-                                            class="form-input font-inter w-full px-4 py-3 rounded-xl text-sm">
+                                        <input type="text" id="inp-pres-name"
+                                            class="form-input font-inter w-full px-4 py-3 rounded-xl text-sm" placeholder="Enter President Name">
                                     </div>
                                     <div class="space-y-1.5">
                                         <label
                                             class="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">SEC
                                             Reg
                                             Date</label>
-                                        <input type="date"
-                                            class="form-input font-inter w-full px-4 py-3 rounded-xl text-sm">
+                                        <input type="date" id="inp-sec-date"
+                                            class="form-input font-inter w-full px-4 py-3 rounded-xl text-sm" placeholder="Select SEC Reg Date">
                                     </div>
                                 </div>
                             </div>
@@ -371,30 +403,30 @@
                                             Name</label>
                                         <input type="text" id="inp-prop-name"
                                             class="form-input font-inter w-full px-4 py-3 rounded-xl text-sm font-semibold"
-                                            value="">
+                                            placeholder="Enter Proprietor Name" value="">
                                     </div>
                                     <div class="space-y-1.5">
                                         <label
                                             class="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Last
                                             Name</label>
-                                        <input type="text"
+                                        <input type="text" id="inp-last-name"
                                             class="form-input font-inter w-full px-4 py-3 rounded-xl text-sm"
-                                            value="MALAWAD">
+                                            placeholder="Last Name" value="">
                                     </div>
                                     <div class="space-y-1.5">
                                         <label
                                             class="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">First
                                             Name</label>
-                                        <input type="text"
+                                        <input type="text" id="inp-first-name"
                                             class="form-input font-inter w-full px-4 py-3 rounded-xl text-sm"
-                                            value="MASTURA">
+                                            placeholder="First Name" value="">
                                     </div>
                                     <div class="space-y-1.5">
                                         <label
                                             class="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">M.I.</label>
-                                        <input type="text"
+                                        <input type="text" id="inp-mi"
                                             class="form-input font-inter w-full px-4 py-3 rounded-xl text-sm"
-                                            value="M.">
+                                            placeholder="M.I." value="">
                                     </div>
                                 </div>
                             </div>
@@ -409,7 +441,7 @@
                                     Profile
                                     Number</label>
                                 <div class="flex gap-2">
-                                    <input type="text"
+                                    <input type="text" id="inp-tenant-profile-num"
                                         class="form-input font-inter flex-1 px-4 py-3 border border-slate-200 dark:border-slate-700 rounded-xl text-sm font-semibold bg-white dark:bg-slate-800"
                                         placeholder="Auto-generated">
                                     <button
@@ -421,7 +453,7 @@
                                 <label
                                     class="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Profile
                                     Name</label>
-                                <input type="text"
+                                <input type="text" id="inp-profile-name"
                                     class="form-input font-inter w-full px-4 py-3 border border-slate-200 dark:border-slate-700 rounded-xl text-sm bg-white dark:bg-slate-800"
                                     placeholder="Enter custom profile name">
                             </div>
@@ -506,31 +538,27 @@
                                             <label
                                                 class="text-xs font-bold text-slate-500 dark:text-slate-400 tracking-wider">Stall
                                                 Number</label>
-                                            <input type="text" id="inp-stall-num" value="" placeholder="-"
-                                                class="form-input font-inter w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-sm font-medium text-slate-600 dark:text-slate-300"
-                                                readonly>
+                                            <input type="text" id="inp-stall-num" value="" placeholder="Enter Stall Number"
+                                                class="form-input font-inter w-full px-4 py-2.5 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-sm font-medium text-slate-600 dark:text-slate-300">
                                         </div>
                                         <div class="space-y-1.5">
                                             <label
                                                 class="text-xs font-bold text-slate-500 dark:text-slate-400 tracking-wider">Floor</label>
-                                            <input type="text" value="IMC.GROUND FLOOR"
-                                                class="form-input font-inter w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-sm font-medium text-slate-600 dark:text-slate-300"
-                                                readonly>
+                                            <input type="text" id="inp-floor" value="" placeholder="Enter Floor"
+                                                class="form-input font-inter w-full px-4 py-2.5 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-sm font-medium text-slate-600 dark:text-slate-300">
                                         </div>
                                         <div class="space-y-1.5">
                                             <label
                                                 class="text-xs font-bold text-slate-500 dark:text-slate-400 tracking-wider">Unit
                                                 Type</label>
-                                            <input type="text" value="KIOSK"
-                                                class="form-input font-inter w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-sm font-medium text-slate-600 dark:text-slate-300"
-                                                readonly>
+                                            <input type="text" id="inp-unit-type" value="" placeholder="Enter Unit Type"
+                                                class="form-input font-inter w-full px-4 py-2.5 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-sm font-medium text-slate-600 dark:text-slate-300">
                                         </div>
                                         <div class="space-y-1.5">
                                             <label
                                                 class="text-xs font-bold text-slate-500 dark:text-slate-400 tracking-wider">Section</label>
-                                            <input type="text" value="IMC.N/A"
-                                                class="form-input font-inter w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-sm font-medium text-slate-600 dark:text-slate-300"
-                                                readonly>
+                                            <input type="text" id="inp-section" value="" placeholder="Enter Section"
+                                                class="form-input font-inter w-full px-4 py-2.5 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-sm font-medium text-slate-600 dark:text-slate-300">
                                         </div>
                                     </div>
 
@@ -539,7 +567,7 @@
                                         <label class="text-lg font-bold tracking-wide">Total Sqm</label>
                                         <div class="flex items-center gap-2">
                                             <input type="number" id="inp-area" step="0.01" value="" placeholder="0.00"
-                                                class="w-24 px-3 py-1.5 bg-white/ border border-white/20 rounded-lg text-lg font-bold text-right focus:border-white focus:outline-none focus:bg-white/ transition text-white placeholder-white/50">
+                                                class="w-24 px-3 py-1.5 bg-white border border-slate-200 rounded-lg text-lg font-bold text-right focus:ring-2 focus:ring-blue-500 transition text-slate-900 placeholder-slate-400">
                                             <span class="text-slate-400 font-medium text-sm">sq.m.</span>
                                         </div>
                                     </div>
@@ -561,7 +589,7 @@
                                             class="w-full form-input font-inter px-4 py-3 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-sm font-medium text-slate-600 dark:text-slate-300">
                                             <option>Standard Rent Format</option>
                                         </select>
-                                        <textarea rows="2"
+                                        <textarea id="inp-rent-clause" rows="2"
                                             class="form-input font-inter w-full px-4 py-3 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-[15px] font-medium text-slate-700 dark:text-slate-200 leading-relaxed shadow-sm">PHP 27,000.00 /month; plus 12% EVAT; subject to 5% withholding tax</textarea>
                                     </div>
 
@@ -576,7 +604,7 @@
                                                 class="w-full form-input font-inter px-3 py-2.5 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-sm text-slate-600 dark:text-slate-300">
                                                 <option>Standard format</option>
                                             </select>
-                                            <textarea rows="2"
+                                            <textarea id="inp-cusa-clause" rows="2"
                                                 class="form-input font-inter w-full px-3 py-2.5 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-sm font-medium text-slate-700 dark:text-slate-200 shadow-sm">PHP 1,500.00 /month; plus 12% EVAT</textarea>
                                         </div>
 
@@ -590,7 +618,7 @@
                                                 class="w-full form-input font-inter px-3 py-2.5 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-sm text-slate-600 dark:text-slate-300">
                                                 <option>Standard format</option>
                                             </select>
-                                            <textarea rows="2"
+                                            <textarea id="inp-aircon-clause" rows="2"
                                                 class="form-input font-inter w-full px-3 py-2.5 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-sm font-medium text-slate-700 dark:text-slate-200 shadow-sm">PHP 1,500.00 /month; plus 12% EVAT</textarea>
                                         </div>
                                     </div>
@@ -613,7 +641,7 @@
                                             class="flex justify-between items-center bg-slate-50 dark:bg-slate-800 border border-slate-100 dark:border-slate-700 p-2 rounded-xl">
                                             <span class="text-slate-600 dark:text-slate-300 text-sm font-medium">Rate
                                                 /sqm</span>
-                                            <input type="text"
+                                            <input type="text" id="inp-rent-rate"
                                                 class="font-inter w-28 px-3 py-1.5 text-right border border-slate-300 rounded-lg focus:border-blue-500 focus:ring-2 focus:ring-blue-200 font-bold bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-100"
                                                 value="6,750.00">
                                         </div>
@@ -625,7 +653,7 @@
                                         </label>
                                         <div class="flex justify-between items-center">
                                             <span class="text-slate-500 dark:text-slate-400 text-sm">Basic Rent</span>
-                                            <span
+                                            <span id="txt-basic-rent"
                                                 class="font-inter font-bold text-slate-700 dark:text-slate-200">27,000.00</span>
                                         </div>
                                         <div class="flex justify-between items-center">
@@ -638,7 +666,7 @@
                                             <span
                                                 class="text-slate-800 dark:text-slate-100 font-extrabold text-sm">Total
                                                 Amount</span>
-                                            <span
+                                            <span id="txt-rent-total"
                                                 class="font-inter font-extrabold text-blue-700 text-lg">30,240.00</span>
                                         </div>
 
@@ -679,7 +707,7 @@
                                             class="flex justify-between items-center bg-slate-50 dark:bg-slate-800 border border-slate-100 dark:border-slate-700 p-2 rounded-xl">
                                             <span class="text-slate-600 dark:text-slate-300 text-sm font-medium">Rate
                                                 /sqm</span>
-                                            <input type="text"
+                                            <input type="text" id="inp-cusa-rate"
                                                 class="font-inter w-28 px-3 py-1.5 text-right border border-slate-300 rounded-lg focus:border-amber-500 focus:ring-2 focus:ring-amber-200 font-bold bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-100"
                                                 value="375.00">
                                         </div>
@@ -691,7 +719,7 @@
                                         </label>
                                         <div class="flex justify-between items-center">
                                             <span class="text-slate-500 dark:text-slate-400 text-sm">Basic CUSA</span>
-                                            <span
+                                            <span id="txt-basic-cusa"
                                                 class="font-inter font-bold text-slate-700 dark:text-slate-200">1,500.00</span>
                                         </div>
                                         <div class="flex justify-between items-center">
@@ -704,7 +732,7 @@
                                             <span
                                                 class="text-slate-800 dark:text-slate-100 font-extrabold text-sm">Total
                                                 Amount</span>
-                                            <span
+                                            <span id="txt-cusa-total"
                                                 class="font-inter font-extrabold text-amber-600 text-lg">1,680.00</span>
                                         </div>
 
@@ -745,7 +773,7 @@
                                             class="flex justify-between items-center bg-slate-50 dark:bg-slate-800 border border-slate-100 dark:border-slate-700 p-2 rounded-xl">
                                             <span class="text-slate-600 dark:text-slate-300 text-sm font-medium">Rate
                                                 /sqm</span>
-                                            <input type="text"
+                                            <input type="text" id="inp-aircon-rate"
                                                 class="font-inter w-28 px-3 py-1.5 text-right border border-slate-300 rounded-lg focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200 font-bold bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-100"
                                                 value="375.00">
                                         </div>
@@ -757,7 +785,7 @@
                                         </label>
                                         <div class="flex justify-between items-center">
                                             <span class="text-slate-500 dark:text-slate-400 text-sm">Basic Aircon</span>
-                                            <span
+                                            <span id="txt-basic-aircon"
                                                 class="font-inter font-bold text-slate-700 dark:text-slate-200">1,500.00</span>
                                         </div>
                                         <div class="flex justify-between items-center">
@@ -770,7 +798,7 @@
                                             <span
                                                 class="text-slate-800 dark:text-slate-100 font-extrabold text-sm">Total
                                                 Amount</span>
-                                            <span
+                                            <span id="txt-aircon-total"
                                                 class="font-inter font-extrabold text-emerald-600 text-lg">1,680.00</span>
                                         </div>
 
@@ -852,14 +880,14 @@
                                     <div class="space-y-2 relative">
                                         <label class="text-sm font-bold text-slate-700 dark:text-slate-200">Commencement
                                             of Lease</label>
-                                        <input type="date"
+                                        <input type="date" id="inp-commence-lease"
                                             class="form-input font-inter w-full px-4 py-3 rounded-xl text-[15px] font-semibold text-slate-800 dark:text-slate-100 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 hover:border-blue-300 transition"
                                             value="2022-07-01">
                                     </div>
                                     <div class="space-y-2 relative">
                                         <label class="text-sm font-bold text-slate-700 dark:text-slate-200">Commencement
                                             of Rent</label>
-                                        <input type="date"
+                                        <input type="date" id="inp-commence-rent"
                                             class="form-input font-inter w-full px-4 py-3 rounded-xl text-[15px] font-semibold text-slate-800 dark:text-slate-100 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 hover:border-blue-300 transition"
                                             value="2022-07-01">
                                     </div>
@@ -896,7 +924,7 @@
                                                 <span
                                                     class="text-[15px] font-semibold text-slate-600 dark:text-slate-300">Years</span>
                                                 <div class="w-32">
-                                                    <input type="number" name="years"
+                                                    <input type="number" name="years" id="inp-lease-years"
                                                         class="font-inter form-input w-full px-4 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-center text-lg font-bold focus:ring-2 focus:ring-blue-500 transition-all group-hover:border-blue-300"
                                                         value="2">
                                                 </div>
@@ -906,7 +934,7 @@
                                                     class="text-[15px] font-semibold text-slate-600 dark:text-slate-300">And
                                                     Months</span>
                                                 <div class="w-32">
-                                                    <input type="number"
+                                                    <input type="number" id="inp-lease-months"
                                                         class="font-inter form-input w-full px-4 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-center text-lg font-bold focus:ring-2 focus:ring-blue-500 transition-all group-hover:border-blue-300"
                                                         value="6">
                                                 </div>
@@ -916,7 +944,7 @@
                                                     class="text-[15px] font-semibold text-slate-600 dark:text-slate-300">And
                                                     Days</span>
                                                 <div class="w-32">
-                                                    <input type="number"
+                                                    <input type="number" id="inp-lease-days"
                                                         class="font-inter form-input w-full px-4 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-center text-lg font-bold focus:ring-2 focus:ring-blue-500 transition-all group-hover:border-blue-300"
                                                         value="1">
                                                 </div>
@@ -935,9 +963,9 @@
                                         <label
                                             class="text-xs font-bold text-slate-400 uppercase tracking-widest mb-2 block">Expiration
                                             Date</label>
-                                        <input type="date"
-                                            class="font-inter w-full px-4 py-3 bg-white/ border border-white/20 rounded-xl text-lg font-bold text-white focus:outline-none focus:border-white transition cursor-not-allowed opacity-80"
-                                            value="2024-12-31" disabled>
+                                        <input type="date" id="inp-expire-date"
+                                            class="font-inter w-full px-4 py-3 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-lg font-bold text-slate-800 dark:text-white focus:outline-none focus:border-blue-500 transition"
+                                            value="2024-12-31">
                                     </div>
                                     <div class="h-12 w-px bg-white/ hidden md:block"></div>
                                     <div class="flex-1 w-full grid grid-cols-2 gap-4">
@@ -976,21 +1004,21 @@
                                             <label
                                                 class="text-xs font-bold text-slate-600 dark:text-slate-300 uppercase tracking-wider">Turnover
                                                 Date</label>
-                                            <input type="date"
+                                            <input type="date" id="inp-turnover-date"
                                                 class="form-input font-inter w-full px-4 py-3 border border-amber-200 rounded-xl text-sm bg-white/80 dark:bg-slate-800/90">
                                         </div>
                                         <div class="space-y-1.5">
                                             <label
                                                 class="text-xs font-bold text-slate-600 dark:text-slate-300 uppercase tracking-wider">Rent
                                                 Free From</label>
-                                            <input type="date"
+                                            <input type="date" id="inp-rent-free-from"
                                                 class="form-input font-inter w-full px-4 py-3 border border-amber-200 rounded-xl text-sm bg-white/80 dark:bg-slate-800/90">
                                         </div>
                                         <div class="space-y-1.5">
                                             <label
                                                 class="text-xs font-bold text-slate-600 dark:text-slate-300 uppercase tracking-wider">Rent
                                                 Free To</label>
-                                            <input type="date"
+                                            <input type="date" id="inp-rent-free-to"
                                                 class="form-input font-inter w-full px-4 py-3 border border-amber-200 rounded-xl text-sm bg-white/80 dark:bg-slate-800/90">
                                         </div>
                                     </div>
@@ -1042,7 +1070,9 @@
                             <tr
                                 class="text-xs font-bold text-slate-400 uppercase tracking-wider bg-slate-50 dark:bg-slate-800/50">
                                 <th class="p-4 rounded-tl-xl">Space Code</th>
-                                <th class="p-4">Company / Name</th>
+                                <th class="p-4">Owner / Company</th>
+                                <th class="p-4">Trade Name</th>
+                                <th class="p-4">Area</th>
                                 <th class="p-4">Status</th>
                             </tr>
                         </thead>
@@ -1060,6 +1090,122 @@
                     <button
                         class="close-stall-modal px-6 py-2.5 bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-200 hover:bg-slate-300 dark:hover:bg-slate-600 rounded-xl font-bold transition-colors">
                         Cancel
+                    </button>
+                </div>
+            </div>
+        </div>
+        <!-- Profile Modal -->
+        <div id="profile-modal"
+            class="hidden fixed inset-0 z-[120] flex items-center justify-center bg-slate-900/60 backdrop-blur-md p-4">
+            <div
+                class="bg-white dark:bg-slate-800 w-full max-w-2xl rounded-[2.5rem] shadow-2xl overflow-hidden border border-slate-200 dark:border-slate-700 animate-fade-in-up">
+                <div class="p-10">
+                    <div class="flex items-center justify-between mb-8">
+                        <div class="flex items-center gap-5">
+                            <div class="relative group">
+                                <img id="prof-avatar-preview" src="https://ui-avatars.com/api/?name=Admin+User&background=4f46e5&color=fff" 
+                                    class="w-24 h-24 rounded-[2rem] object-cover shadow-xl border-4 border-white dark:border-slate-700">
+                                <label class="absolute -bottom-2 -right-2 w-10 h-10 bg-blue-600 text-white rounded-xl flex items-center justify-center cursor-pointer hover:bg-blue-700 shadow-lg transition-transform hover:scale-110 active:scale-95">
+                                    <i class="fa-solid fa-camera text-sm"></i>
+                                    <input type="file" id="prof-avatar-input" hidden accept="image/*">
+                                </label>
+                            </div>
+                            <div>
+                                <h3 id="prof-display-name" class="text-3xl font-extrabold text-slate-800 dark:text-white leading-tight">Admin User</h3>
+                                <p id="prof-display-role" class="text-blue-500 font-bold uppercase tracking-widest text-[11px]">Super Administrator</p>
+                            </div>
+                        </div>
+                        <button onclick="document.getElementById('profile-modal').classList.add('hidden')" class="w-12 h-12 flex items-center justify-center rounded-2xl bg-slate-50 dark:bg-slate-700/50 text-slate-400 hover:text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-500/10 transition-all">
+                            <i class="fa-solid fa-xmark text-xl"></i>
+                        </button>
+                    </div>
+
+                    <!-- Tabs Nav -->
+                    <div class="flex gap-4 mb-8 bg-slate-50 dark:bg-slate-900/50 p-2 rounded-2xl border border-slate-100 dark:border-slate-700">
+                        <button class="flex-1 py-3 px-6 rounded-xl font-extrabold text-sm transition-all profile-tab-btn active bg-white dark:bg-slate-800 text-blue-600 shadow-sm border border-blue-100 dark:border-slate-700" data-target="prof-tab-basic">
+                            <i class="fa-solid fa-user-gear mr-2"></i> Basic Info
+                        </button>
+                        <button class="flex-1 py-3 px-6 rounded-xl font-extrabold text-sm transition-all profile-tab-btn text-slate-400 hover:text-slate-600 dark:hover:text-slate-200" data-target="prof-tab-security">
+                            <i class="fa-solid fa-shield-halved mr-2"></i> Security
+                        </button>
+                    </div>
+
+                    <!-- Tab Contents -->
+                    <div id="prof-tab-basic" class="prof-modal-tab block space-y-6">
+                        <div class="grid grid-cols-2 gap-6">
+                            <div class="space-y-2">
+                                <label class="text-xs font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest ml-1">Full Name</label>
+                                <input type="text" id="prof-input-name" class="w-full px-5 py-3.5 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-2xl text-[15px] font-bold text-slate-700 dark:text-slate-200 focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 transition-all outline-none">
+                            </div>
+                            <div class="space-y-2">
+                                <label class="text-xs font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest ml-1">Phone Number</label>
+                                <input type="text" id="prof-input-phone" class="w-full px-5 py-3.5 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-2xl text-[15px] font-bold text-slate-700 dark:text-slate-200 focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 transition-all outline-none">
+                            </div>
+                            <div class="col-span-2 space-y-2">
+                                <label class="text-xs font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest ml-1">Email Address</label>
+                                <input type="email" id="prof-input-email" class="w-full px-5 py-3.5 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-2xl text-[15px] font-bold text-slate-700 dark:text-slate-200 focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 transition-all outline-none">
+                            </div>
+                        </div>
+                        <div class="p-6 bg-gradient-to-br from-blue-500/5 to-purple-500/5 rounded-[2rem] border border-blue-500/10 flex items-center gap-5">
+                            <div class="w-14 h-14 bg-white dark:bg-slate-800 rounded-2xl flex items-center justify-center text-blue-600 shadow-soft">
+                                <i class="fa-solid fa-briefcase text-2xl"></i>
+                            </div>
+                            <div>
+                                <p class="text-[10px] font-black text-blue-400 uppercase tracking-[0.2em] mb-1">Position & Dept</p>
+                                <p class="text-slate-700 dark:text-slate-200 font-bold"><span id="prof-display-position">Senior Manager</span> <span class="mx-2 text-slate-300">|</span> <span id="prof-display-dept" class="text-blue-600">Operations Dept</span></p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div id="prof-tab-security" class="prof-modal-tab hidden space-y-6">
+                        <div class="space-y-2">
+                            <label class="text-xs font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest ml-1">Current Password</label>
+                            <input type="password" id="prof-input-curr-pass" placeholder="Confirm your identity" class="w-full px-5 py-3.5 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-2xl text-[15px] font-bold outline-none focus:border-blue-500 transition-all">
+                        </div>
+                        <div class="grid grid-cols-2 gap-6">
+                            <div class="space-y-2">
+                                <label class="text-xs font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest ml-1">New Password</label>
+                                <input type="password" id="prof-input-new-pass" placeholder="Min. 8 chars" class="w-full px-5 py-3.5 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-2xl text-[15px] font-bold outline-none focus:border-blue-500 transition-all">
+                            </div>
+                            <div class="space-y-2">
+                                <label class="text-xs font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest ml-1">Confirm Password</label>
+                                <input type="password" id="prof-input-conf-pass" placeholder="Match new password" class="w-full px-5 py-3.5 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-2xl text-[15px] font-bold outline-none focus:border-blue-500 transition-all">
+                            </div>
+                        </div>
+                        <div class="bg-amber-50 dark:bg-amber-900/10 p-5 rounded-2xl border border-amber-100 dark:border-amber-900/30 flex items-start gap-4">
+                            <i class="fa-solid fa-circle-exclamation text-amber-500 mt-1"></i>
+                            <p class="text-xs text-amber-700 dark:text-amber-400 leading-relaxed font-medium">Changing your password will sign you out of all other devices currently active.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Footer -->
+                <div class="px-10 py-8 bg-slate-50 dark:bg-slate-900/50 border-t border-slate-100 dark:border-slate-700 flex justify-end items-center gap-4">
+                    <button onclick="document.getElementById('profile-modal').classList.add('hidden')" class="px-8 py-3.5 text-slate-500 font-bold hover:text-slate-800 dark:hover:text-white transition-colors">Dismiss</button>
+                    <button id="btn-save-profile" class="px-10 py-3.5 bg-gradient-primary text-white rounded-[1.5rem] font-bold shadow-xl shadow-blue-500/20 hover:opacity-90 active:scale-95 transition-all flex items-center gap-3">
+                        <i class="fa-solid fa-floppy-disk"></i> Update Profile
+                    </button>
+                </div>
+            </div>
+        </div>
+        <!-- Unsaved Changes Modal -->
+        <div id="confirm-modal"
+            class="hidden fixed inset-0 z-[110] flex items-center justify-center bg-slate-900/60 backdrop-blur-md p-4">
+            <div
+                class="bg-white dark:bg-slate-800 w-full max-w-md rounded-3xl shadow-2xl overflow-hidden border border-slate-200 dark:border-slate-700 animate-fade-in-up">
+                <div class="p-8 text-center">
+                    <div class="w-20 h-20 bg-amber-100 dark:bg-amber-900/30 rounded-full flex items-center justify-center mx-auto mb-6">
+                        <i class="fa-solid fa-triangle-exclamation text-3xl text-amber-600"></i>
+                    </div>
+                    <h3 class="text-2xl font-bold text-slate-800 dark:text-white mb-2">Unsaved Changes</h3>
+                    <p class="text-slate-500 dark:text-slate-400">You have unsaved changes in your form. Are you sure you want to leave this page and lose your progress?</p>
+                </div>
+                <div class="bg-slate-50 dark:bg-slate-800/50 p-6 flex gap-3">
+                    <button id="btn-confirm-cancel" class="flex-1 px-6 py-3 bg-white dark:bg-slate-700 text-slate-700 dark:text-slate-200 border border-slate-200 dark:border-slate-600 rounded-2xl font-bold hover:bg-slate-50 dark:hover:bg-slate-600 transition-all">
+                        Stay Here
+                    </button>
+                    <button id="btn-confirm-leave" class="flex-1 px-6 py-3 bg-rose-600 text-white rounded-2xl font-bold hover:bg-rose-700 shadow-lg shadow-rose-500/30 transition-all">
+                        Leave Page
                     </button>
                 </div>
             </div>
@@ -1111,7 +1257,7 @@
                     renderStalls(allStalls);
                 }
             } catch (e) {
-                document.getElementById('stall-modal-tbody').innerHTML = `<tr><td colspan="3" class="p-8 text-center text-rose-500">Error loading records.</td></tr>`;
+                document.getElementById('stall-modal-tbody').innerHTML = `<tr><td colspan="5" class="p-8 text-center text-rose-500">Error loading records.</td></tr>`;
             }
         }
 
@@ -1123,7 +1269,7 @@
         function renderStalls(list) {
             const tbody = document.getElementById('stall-modal-tbody');
             if (!list.length) {
-                tbody.innerHTML = `<tr><td colspan="3" class="p-8 text-center text-slate-500">No records found.</td></tr>`;
+                tbody.innerHTML = `<tr><td colspan="5" class="p-8 text-center text-slate-500">No records found.</td></tr>`;
                 return;
             }
 
@@ -1141,9 +1287,12 @@
                 return `<tr class="${trClass}" ${onClickAttr}>
                     <td class="p-4 font-bold text-blue-600 dark:text-blue-400">${escapeHTML(item.space_code)}</td>
                     <td class="p-4 text-slate-700 dark:text-slate-200">
-                        <div class="font-bold">${escapeHTML(item.company_name)}</div>
-                        <div class="text-[12px] text-slate-500">${escapeHTML(item.trade_name) || escapeHTML(item.owner_lessee_name)}</div>
+                        <div class="font-bold">${escapeHTML(item.company_name) || escapeHTML(item.owner_lessee_name)}</div>
                     </td>
+                    <td class="p-4 text-slate-600 dark:text-slate-300 text-xs italic">
+                        ${escapeHTML(item.trade_name)}
+                    </td>
+                    <td class="p-4 font-semibold text-slate-600 dark:text-slate-300">${escapeHTML(item.total_area)} <span class="text-[10px] text-slate-400">sqm</span></td>
                     <td class="p-4">
                         <span class="${statusColor}">${statusText}</span>
                     </td>
@@ -1153,22 +1302,110 @@
 
         window.selectStall = function (base64Str) {
             const payload = JSON.parse(decodeURIComponent(atob(base64Str)));
+            const el = id => document.getElementById(id);
+            const setVal = (id, val) => { if(el(id)) el(id).value = val ?? ''; };
+            const setTxt = (id, val) => { if(el(id)) el(id).textContent = val ?? '0.00'; };
+            const setRadio = (name, val) => {
+                if(!val) return;
+                const radios = document.getElementsByName(name);
+                for(let r of radios) {
+                    const lbl = r.nextElementSibling ? r.nextElementSibling.textContent.trim().toLowerCase() : '';
+                    if(lbl === val.toLowerCase() || val.toLowerCase().includes(lbl)) {
+                        r.checked = true;
+                        // Trigger change incase there are listeners
+                        r.dispatchEvent(new Event('change'));
+                        break;
+                    }
+                }
+            };
+
             document.getElementById('stall-modal').classList.add('hidden');
 
-            // Populate fields
-            if (document.getElementById('inp-stall-code')) document.getElementById('inp-stall-code').value = payload.space_code || '';
-            if (document.getElementById('inp-stall-num')) document.getElementById('inp-stall-num').value = payload.space_code || '-';
-            if (document.getElementById('inp-area')) document.getElementById('inp-area').value = payload.total_area || '';
+            // 1. Stall Info
+            setVal('inp-stall-code', payload.space_code);
+            setVal('inp-stall-num', payload.space_code);
+            setVal('inp-area', payload.total_area);
+            
+            setVal('inp-floor', payload.floor);
+            setVal('inp-unit-type', payload.unit_type);
+            setVal('inp-section', payload.section);
 
-            if (document.getElementById('inp-account-name')) document.getElementById('inp-account-name').value = payload.company_name || '';
-            if (document.getElementById('inp-trade-name')) document.getElementById('inp-trade-name').value = payload.trade_name || '';
-            if (document.getElementById('inp-lessee-addr')) document.getElementById('inp-lessee-addr').value = payload.business_address || payload.owner_address || '';
-            if (document.getElementById('inp-use')) document.getElementById('inp-use').value = payload.nature_of_business || '';
-            if (document.getElementById('inp-email')) document.getElementById('inp-email').value = payload.email_address || '';
-            if (document.getElementById('inp-mobile')) document.getElementById('inp-mobile').value = payload.contact_nos || '';
-            if (document.getElementById('inp-prop-name')) document.getElementById('inp-prop-name').value = payload.owner_lessee_name || '';
+            // 2. Clauses
+            if (payload.basic_rent) {
+                setVal('inp-rent-clause', `PHP ${payload.basic_rent} /month; plus 12% EVAT; subject to 5% withholding tax`);
+            }
+            if (payload.cusa) {
+                setVal('inp-cusa-clause', `PHP ${payload.cusa} /month; plus 12% EVAT`);
+            }
+            if (payload.aircon_charges) {
+                setVal('inp-aircon-clause', `PHP ${payload.aircon_charges} /month; plus 12% EVAT`);
+            }
 
-            // Automatically scroll to the primary section if desired, though user is already in form
+            // 3. Summary Cards (Calculations based on Rate * Area if needed)
+            const area = parseFloat(payload.total_area) || 0;
+            const rentRate = parseFloat(payload.rate_per_sqm) || 0;
+            const basicRent = parseFloat(payload.basic_rent) || (rentRate * area);
+
+            setVal('inp-rent-rate', rentRate.toLocaleString('en-US', {minimumFractionDigits:2}));
+            setTxt('txt-basic-rent', basicRent.toLocaleString('en-US', {minimumFractionDigits:2}));
+            const rentTotal = basicRent * 1.12;
+            setTxt('txt-rent-total', rentTotal.toLocaleString('en-US', {minimumFractionDigits:2}));
+
+            setVal('inp-cusa-rate', '375.00'); 
+            const basicCusa = parseFloat(payload.cusa) || 0;
+            setTxt('txt-basic-cusa', basicCusa.toLocaleString('en-US', {minimumFractionDigits:2}));
+            setTxt('txt-cusa-total', (basicCusa * 1.12).toLocaleString('en-US', {minimumFractionDigits:2}));
+
+            setVal('inp-aircon-rate', '375.00'); 
+            const basicAircon = parseFloat(payload.aircon_charges) || 0;
+            setTxt('txt-basic-aircon', basicAircon.toLocaleString('en-US', {minimumFractionDigits:2}));
+            setTxt('txt-aircon-total', (basicAircon * 1.12).toLocaleString('en-US', {minimumFractionDigits:2}));
+
+            // 4. Lessee Profile Info
+            setVal('inp-account-name', payload.company_name);
+            setVal('inp-trade-name', payload.trade_name);
+            setVal('inp-lessee-addr', payload.business_address || payload.owner_address);
+            setVal('inp-use', payload.nature_of_business);
+            setVal('inp-email', payload.email_address);
+            setVal('inp-mobile', payload.contact_nos);
+            setVal('inp-landline', payload.contact_nos); // Often sharing the same field or part of it
+            setVal('inp-prop-name', payload.owner_lessee_name);
+            setVal('inp-tin', payload.tin || '');
+
+            // Set Nature of Business Radio
+            if (payload.nature_of_business) setRadio('nat_business', payload.nature_of_business);
+
+            // Attempt to split name for Single Proprietor fields
+            if (payload.owner_lessee_name) {
+                const parts = payload.owner_lessee_name.split(',');
+                if (parts.length >= 2) {
+                    setVal('inp-last-name', parts[0].trim());
+                    const firstPart = parts[1].trim().split(' ');
+                    setVal('inp-first-name', firstPart[0]);
+                    if (firstPart.length > 1) setVal('inp-mi', firstPart[firstPart.length - 1]);
+                }
+            }
+
+            // 5. Lease Terms
+            if (payload.lease_period_start) {
+                setVal('inp-commence-lease', payload.lease_period_start);
+                setVal('inp-commence-rent', payload.lease_period_start);
+            }
+            if (payload.lease_period_end) {
+                setVal('inp-expire-date', payload.lease_period_end);
+            }
+
+            if (payload.lease_period_notes) {
+                const yrs = payload.lease_period_notes.match(/(\d+)\s*Year/i);
+                const mos = payload.lease_period_notes.match(/(\d+)\s*Month/i);
+                const dys = payload.lease_period_notes.match(/(\d+)\s*Day/i);
+                if (yrs) setVal('inp-lease-years', yrs[1]);
+                if (mos) setVal('inp-lease-months', mos[1]);
+                if (dys) setVal('inp-lease-days', dys[1]);
+            }
+
+            // Update profile name
+            setVal('inp-profile-name', payload.company_name || payload.owner_lessee_name);
         };
     </script>
 </body>

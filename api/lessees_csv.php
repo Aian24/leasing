@@ -249,6 +249,10 @@ try {
                         $data[$dbCol] = trim(preg_replace('/\s*(sq\.?m\.?|sqm|m2)\s*/i', '', $rawVal));
                         continue;
                     }
+                    if (in_array($dbCol, ['rate_per_sqm', 'basic_rent', 'cusa', 'aircon_charges', 'security_deposit', 'electricity_water_charges', 'utility_deposit', 'construction_bond'])) {
+                        $data[$dbCol] = preg_replace('/[^0-9.]/', '', $rawVal);
+                        continue;
+                    }
                     if (in_array($dbCol, ['lease_period_start','lease_period_end'])) {
                         $data[$dbCol] = $parseDate($rawVal);
                         continue;

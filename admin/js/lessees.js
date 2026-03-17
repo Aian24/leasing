@@ -101,7 +101,11 @@ const LESSEES_PAGE = {
             }
 
             const leasePeriod = [r.lease_period_start, r.lease_period_end].filter(Boolean).join(' → ') || '—';
-            const rent = r.basic_rent ? '₱' + Number(r.basic_rent).toLocaleString('en-PH', { minimumFractionDigits: 2 }) : '—';
+            const cleanRent = r.basic_rent ? String(r.basic_rent).replace(/[^0-9.-]+/g, "") : "";
+            const rentVal = parseFloat(cleanRent);
+            const rent = !isNaN(rentVal)
+                ? '₱' + rentVal.toLocaleString('en-PH', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
+                : '—';
 
             return `<tr>
                 <td style="color:var(--muted);font-size:0.75rem">${r.id}</td>

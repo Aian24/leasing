@@ -22,6 +22,7 @@ const PAGES_PAGE = {
             const res = await fetch(`${this.apiBase}?action=list`);
             const data = await res.json();
             if (data.success) {
+                this.pages = data.data;
                 this.renderTable(data.data);
                 this.updateStats(data.stats);
             }
@@ -43,29 +44,88 @@ const PAGES_PAGE = {
             return;
         }
 
-        tbody.innerHTML = rows.map(p => `
-            <tr>
-                <td style="font-weight:700; color:#fff">${this.esc(p.page_name)}</td>
-                <td style="color:var(--primary)">/${this.esc(p.slug)}</td>
-                <td>
-                    <span class="chip ${p.is_visible ? 'chip-green' : 'chip-red'}">
-                        ${p.is_visible ? 'Visible' : 'Hidden'}
-                    </span>
-                </td>
-                <td style="font-size:0.8rem">${new Date(p.updated_at).toLocaleDateString()}</td>
-                <td style="font-size:0.8rem">${this.esc(p.editor_name || 'System')}</td>
-                <td style="text-align:right">
-                    <div style="display:flex; gap:8px; justify-content:flex-end">
-                        <button class="btn btn-ghost btn-sm" onclick="PAGES_PAGE.toggleVisibility(${p.id})" title="Toggle Visibility">
-                            <i class="fa-solid ${p.is_visible ? 'fa-eye-slash' : 'fa-eye'}"></i>
-                        </button>
-                        <button class="btn btn-ghost btn-sm" style="color:#ef4444" onclick="PAGES_PAGE.confirmDelete(${p.id})" title="Delete Registry">
-                            <i class="fa-solid fa-trash-can"></i>
-                        </button>
-                    </div>
-                </td>
-            </tr>
-        `).join('');
+        tbody.innerHTML = rows.map(p => {
+            const isVisible = Number(p.is_visible) === 1;
+            return `
+                <tr>
+                    <td>
+                        <div style="font-weight:700; color:#fff">${this.esc(p.page_name)}</div>
+                        <div style="font-size:0.65rem; color:var(--muted); text-transform:uppercase; letter-spacing:0.05em; margin-top:2px">${p.type}</div>
+                    </td>
+                    <td style="color:var(--primary)">/${this.esc(p.slug)}</td>
+                    <td>
+                        <span class="chip ${isVisible ? 'chip-green' : 'chip-red'}">
+                            ${isVisible ? 'Visible' : 'Hidden'}
+                        </span>
+                    </td>
+                    <td style="font-size:0.8rem">${new Date(p.updated_at).toLocaleDateString()}</td>
+                    <td style="font-size:0.8rem">${this.esc(p.editor_name || 'System')}</td>
+                    <td style="text-align:right">
+                        <div style="display:flex; gap:8px; justify-content:flex-end">
+                            <button class="btn btn-ghost btn-sm" onclick="PAGES_PAGE.openEditModal(${p.id})" title="Edit Content">
+                                <i class="fa-solid fa-pen-to-square"></i>
+                            </button>
+                            <button class="btn btn-ghost btn-sm" onclick="PAGES_PAGE.toggleVisibility(${p.id})" title="Toggle Visibility">
+                                <i class="fa-solid ${isVisible ? 'fa-eye-slash' : 'fa-eye'}"></i>
+                            </button>
+                            <button class="btn btn-ghost btn-sm" style="color:#ef4444" onclick="PAGES_PAGE.confirmDelete(${p.id})" title="Delete Page">
+                                <i class="fa-solid fa-trash-can"></i>
+                            </button>
+                        </div>
+                    </td>
+                </tr>
+            `;
+        }).join('');
+    },
+
+    // ── Modal & Form ──
+    openAddModal() {
+        const form = document.getElementById('page-form');
+        form.reset();
+        document.getElementById('page-id').value = '';
+        document.getElementById('page-modal-title').textContent = 'Create New Page';
+        document.getElementById('page-overlay').classList.add('open');
+    },
+
+    openEditModal(id) {
+        const p = this.pages.find(item => item.id == id);
+        if (!p) return;
+
+        document.getElementById('page-id').value = p.id;
+        document.getElementById('page-name').value = p.page_name;
+        document.getElementById('page-slug').value = p.slug;
+        document.getElementById('page-type').value = p.type;
+        document.getElementById('page-content').value = p.content || '';
+        document.getElementById('page-visible').checked = Number(p.is_visible) === 1;
+
+        document.getElementById('page-modal-title').textContent = 'Edit Page Content';
+        document.getElementById('page-overlay').classList.add('open');
+    },
+
+    closeModal() {
+        document.getElementById('page-overlay').classList.remove('open');
+    },
+
+    async savePage(e) {
+        e.preventDefault();
+        const formData = new FormData(e.target);
+        const data = Object.fromEntries(formData.entries());
+
+        try {
+            const res = await fetch(`${this.apiBase}?action=save`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(data)
+            });
+            const json = await res.json();
+            if (json.success) {
+                showToast(json.message);
+                this.closeModal();
+                this.loadPages();
+            } else {
+                showToast(json.message, 'danger');
+            }
+        } catch (err) { showToast('Error saving page', 'danger'); }
     },
 
     async toggleVisibility(id) {
@@ -77,10 +137,14 @@ const PAGES_PAGE = {
             });
             const data = await res.json();
             if (data.success) {
-                showToast('Visibility toggled');
+                const statusText = data.new_status === 1 ? 'is now visible' : 'is now hidden';
+                showToast(`Page ${statusText}`);
                 this.loadPages();
             }
-        } catch (e) { showToast('Error toggling', 'danger'); }
+        } catch (e) {
+            console.error(e);
+            showToast('Error toggling visibility', 'danger');
+        }
     },
 
     confirmDelete(id) {

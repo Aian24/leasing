@@ -1,5 +1,5 @@
 const fs = require('fs');
-let content = fs.readFileSync('c:/xampp/htdocs/Lease/index.html', 'utf8');
+let content = fs.readFileSync('c:/xampp/htdocs/Lease/index.php', 'utf8');
 
 // Colors
 content = content.replace(/\btext-slate-800(?! dark:)\b/g, 'text-slate-800 dark:text-slate-100');
@@ -41,5 +41,5 @@ content = content.replace(/\bhover:bg-slate-100(?! dark:)\b/g, 'hover:bg-slate-1
 content = content.replace(/\bhover:bg-blue-50(?! dark:)\b/g, 'hover:bg-blue-50 dark:hover:bg-blue-900/60');
 content = content.replace(/\bhover:bg-white\/50(?! dark:)\b/g, 'hover:bg-white/50 dark:hover:bg-slate-700/50');
 
-fs.writeFileSync('c:/xampp/htdocs/Lease/index.html', content);
+fs.writeFileSync('c:/xampp/htdocs/Lease/index.php', content);
 console.log('Success');

@@ -90,11 +90,11 @@ $root = $in_subfolder ? '../' : '';
 
         <div class="nav-section-label">App</div>
 
-        <a class="nav-item" href="../../user/index.html" target="_blank">
+        <a class="nav-item" href="../../user/index.php" target="_blank">
             <i class="fa-solid fa-arrow-up-right-from-square"></i>
             View App
         </a>
-        <a class="nav-item" href="../../index.html" target="_blank">
+        <a class="nav-item" href="../../index.php" target="_blank">
             <i class="fa-solid fa-right-to-bracket"></i>
             Login Page
         </a>
@@ -102,10 +102,10 @@ $root = $in_subfolder ? '../' : '';
 
     <div class="sidebar-footer">
         <div class="user-chip">
-            <img id="sidebar-user-avatar" src="https://ui-avatars.com/api/?name=Admin+User&background=4f46e5&color=fff&rounded=true" alt="Admin">
+            <img id="sidebar-user-avatar" src="https://ui-avatars.com/api/?name=<?php echo urlencode($_SESSION['name']); ?>&background=4f46e5&color=fff&rounded=true" alt="Admin">
             <div class="info">
-                <div class="name" id="sidebar-user-name">Admin User</div>
-                <div class="role" id="sidebar-user-role">Super Administrator</div>
+                <div class="name" id="sidebar-user-name"><?php echo htmlspecialchars($_SESSION['name']); ?></div>
+                <div class="role" id="sidebar-user-role"><?php echo htmlspecialchars($_SESSION['role']); ?></div>
             </div>
             <i class="fa-solid fa-ellipsis" style="color:var(--muted);font-size:14px"></i>
         </div>

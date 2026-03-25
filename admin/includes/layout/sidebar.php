@@ -41,6 +41,13 @@ $root = $in_subfolder ? '../' : '';
             <span class="badge" id="nav-count" style="background:rgba(34,197,94,0.2);color:#86efac">—</span>
         </div>
 
+        <div class="nav-item <?php echo ($current_page == 'contracts.php') ? 'active' : ''; ?>"
+             onclick="window.location.href='<?php echo $root; ?>management/contracts.php'">
+            <i class="fa-solid fa-file-signature"></i>
+            Review Contracts
+            <span class="badge" id="nav-contracts-count" style="background:rgba(59,130,246,0.2);color:#93c5fd">—</span>
+        </div>
+
         <div class="nav-item <?php echo ($current_page == 'roles.php') ? 'active' : ''; ?>"
              onclick="window.location.href='<?php echo $root; ?>management/roles.php'">
             <i class="fa-solid fa-shield-halved"></i>

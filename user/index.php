@@ -4,6 +4,17 @@ if (!isset($_SESSION['user_id'])) {
     header('Location: ../index.php');
     exit;
 }
+
+
+// Maintenance Mode Check
+require_once __DIR__ . '/../database/config.php';
+if (getSetting('maintenance_mode') === 'true' && $_SESSION['role'] !== 'Admin') {
+    header('Location: ../maintenance.php');
+    exit;
+}
+
+$appName = getSetting('app_name', 'LeasePro');
+$appTagline = getSetting('app_tagline', 'Lease Management System');
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -11,15 +22,13 @@ if (!isset($_SESSION['user_id'])) {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Lease Management System - Premium</title>
+    <title><?php echo htmlspecialchars($appName); ?> — <?php echo htmlspecialchars($appTagline); ?></title>
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- FontAwesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <!-- Local CSS and JS -->
-    <link rel="stylesheet" href="../css/style.css">
-    <!-- Custom Tailwind Configuration -->
     <script>
+        window.ENABLE_ANNOUNCEMENTS = true;
         tailwind.config = {
             darkMode: 'class',
             theme: {
@@ -38,6 +47,9 @@ if (!isset($_SESSION['user_id'])) {
             }
         }
     </script>
+
+    <!-- Custom Styles -->
+    <link rel="stylesheet" href="../css/style.css">
     <script src="../js/script.js" defer></script>
 </head>
 
@@ -53,7 +65,21 @@ if (!isset($_SESSION['user_id'])) {
                     class="w-10 h-10 rounded-xl bg-gradient-primary flex items-center justify-center text-white shadow-lg shadow-blue-500/30">
                     <i class="fa-solid fa-building"></i>
                 </div>
-                Lease<span class="text-gradient">Pro</span>
+
+
+                <?php 
+                if ($appName === 'LeasePro') {
+                    echo 'Lease<span class="text-gradient">Pro</span>';
+                } else {
+                    $words = explode(' ', $appName);
+                    if (count($words) > 1) {
+                        $lastWord = array_pop($words);
+                        echo htmlspecialchars(implode(' ', $words)) . ' <span class="text-gradient">' . htmlspecialchars($lastWord) . '</span>';
+                    } else {
+                        echo '<span class="text-gradient">' . htmlspecialchars($appName) . '</span>';
+                    }
+                }
+                ?>
             </h1>
             <button id="close-sidebar"
                 class="lg:hidden text-slate-400 hover:text-slate-700 dark:text-slate-200 transition">
@@ -90,6 +116,14 @@ if (!isset($_SESSION['user_id'])) {
                         <i class="fa-solid fa-calendar-days"></i>
                     </div>
                     <span class="nav-text text-[15px]">Lease Term & Dates</span>
+                </a>
+                <a href="#"
+                    class="nav-link text-slate-500 dark:text-slate-400 font-medium hover:bg-slate-50 dark:bg-slate-800/50 flex items-center gap-4 px-4 py-3.5 rounded-2xl transition-all"
+                    data-target="contracts-section">
+                    <div class="w-9 h-9 rounded-xl flex items-center justify-center text-lg">
+                        <i class="fa-solid fa-file-contract"></i>
+                    </div>
+                    <span class="nav-text text-[15px]">Submitted Contracts</span>
                 </a>
             </nav>
 
@@ -139,6 +173,9 @@ if (!isset($_SESSION['user_id'])) {
 
     <!-- Main Content -->
     <main class="flex-1 flex flex-col h-screen overflow-hidden w-full relative">
+        <!-- Announcements Overlay -->
+        <div id="ann-notifications" class="fixed top-24 right-8 z-[100] w-80 space-y-3 pointer-events-none"></div>
+
         <!-- Floating Glass Header -->
         <header
             class="h-20 flex items-center justify-between px-6 lg:px-10 shrink-0 z-[60] mt-4 mx-4 lg:mx-8 premium-card !overflow-visible border-none bg-white/60 dark:bg-slate-800/60">
@@ -169,6 +206,26 @@ if (!isset($_SESSION['user_id'])) {
                     <!-- Search Results -->
                     <div id="search-results" class="dropdown-menu search-dropdown"></div>
                 </div>
+
+                <!-- Notifications -->
+                <div class="relative">
+                    <button id="noti-toggle"
+                        class="relative flex items-center justify-center w-11 h-11 bg-white dark:bg-slate-800 border border-slate-100 dark:border-slate-700 text-slate-400 dark:text-slate-500 rounded-xl hover:text-blue-600 dark:hover:text-blue-400 hover:shadow-md transition-all shadow-sm">
+                        <i class="fa-solid fa-bell text-[1.1rem]"></i>
+                        <span id="noti-badge" class="absolute -top-1 -right-1 w-4 h-4 bg-rose-500 text-white text-[9px] font-bold rounded-full flex items-center justify-center hidden">0</span>
+                    </button>
+                    <!-- Noti Panel -->
+                    <div id="noti-panel" class="absolute right-0 top-full mt-4 w-80 bg-white/95 dark:bg-slate-800/95 backdrop-blur-xl border border-slate-200 dark:border-slate-700 rounded-3xl shadow-2xl z-[110] hidden overflow-hidden scale-95 opacity-0 transition-all origin-top-right">
+                        <div class="px-6 py-4 border-b border-slate-100 dark:border-slate-700 flex items-center justify-between">
+                            <h4 class="text-sm font-bold text-slate-800 dark:text-white uppercase tracking-wider">Broadcasts</h4>
+                            <span class="text-[10px] font-bold text-slate-400 uppercase">Recent</span>
+                        </div>
+                        <div id="noti-list" class="max-h-80 overflow-y-auto p-4 space-y-3">
+                            <div class="text-center py-6 text-slate-400 text-xs">No notifications</div>
+                        </div>
+                    </div>
+                </div>
+
                 <!-- Dark Mode Toggle -->
                 <button id="theme-toggle"
                     class="relative flex items-center justify-center w-11 h-11 bg-white dark:bg-slate-800 border border-slate-100 dark:border-slate-700 text-slate-500 dark:text-slate-400 rounded-xl hover:text-blue-600 dark:hover:text-blue-400 hover:shadow-md transition-all shadow-sm">
@@ -188,7 +245,7 @@ if (!isset($_SESSION['user_id'])) {
                 <section id="lessee-section" class="page-section animate-fade-in space-y-2"
                     style="animation-delay: 0.2s;">
 
-                    <div class="premium-card">
+                    <div class="premium-card wait-for-data skeleton">
                         <!-- Card Header -->
                         <div
                             class="bg-gradient-primary border-b border-blue-500/30 px-8 py-6 flex flex-col sm:flex-row sm:items-center justify-between gap-6">
@@ -461,15 +518,8 @@ if (!isset($_SESSION['user_id'])) {
                     </div>
 
                     <!-- Form Action Buttons -->
-                    <div
-                        class="flex items-center justify-end gap-4 mt-8 bg-white/40 dark:bg-slate-800/50 p-4 rounded-2xl border border-slate-200 dark:border-slate-700/50 dark:border-slate-700">
-                        <button
-                            class="flex items-center gap-2 px-6 py-3 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 rounded-xl hover:bg-slate-50 dark:bg-slate-800 transition-all font-bold shadow-sm text-sm">
-                            Cancel
-                        </button>
-                        <button
-                            class="flex items-center gap-2 px-6 py-3 bg-gradient-primary text-white rounded-xl hover:opacity-90 transition-all font-bold shadow-lg shadow-blue-500/30 text-sm hover:-translate-y-0.5">
-                            <i class="fa-solid fa-floppy-disk"></i> Save Data
+                        <button onclick="document.querySelector('[data-target=\'stall-section\']').click()" class="flex items-center gap-2 px-8 py-3 bg-gradient-primary text-white rounded-xl hover:opacity-90 transition-all font-bold shadow-lg shadow-blue-500/30 text-sm hover:-translate-y-0.5 ml-auto">
+                            Continue to Stall Config <i class="fa-solid fa-arrow-right ml-1"></i>
                         </button>
                     </div>
                 </section>
@@ -480,7 +530,7 @@ if (!isset($_SESSION['user_id'])) {
                 <!-- ============================ -->
                 <section id="stall-section" class="page-section hidden animate-fade-in space-y-2"
                     style="animation-delay: 0.2s;">
-                    <div class="premium-card">
+                    <div class="premium-card wait-for-data skeleton">
                         <!-- Banner Header -->
                         <div
                             class="bg-gradient-primary px-8 py-6 flex flex-col sm:flex-row sm:items-center justify-between gap-6">
@@ -848,15 +898,12 @@ if (!isset($_SESSION['user_id'])) {
                     </div>
 
                     <!-- Form Action Buttons -->
-                    <div
-                        class="flex items-center justify-end gap-4 mt-8 bg-white/40 dark:bg-slate-800/50 p-4 rounded-2xl border border-slate-200 dark:border-slate-700/50 dark:border-slate-700">
-                        <button
-                            class="flex items-center gap-2 px-6 py-3 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 rounded-xl hover:bg-slate-50 dark:bg-slate-800 transition-all font-bold shadow-sm text-sm">
-                            Cancel
+                    <div class="flex items-center justify-end gap-4 mt-8 bg-white/40 dark:bg-slate-800/50 p-4 rounded-2xl border border-slate-200 dark:border-slate-700/50 dark:border-slate-700">
+                        <button onclick="document.querySelector('[data-target=\'lessee-section\']').click()" class="flex items-center gap-2 px-6 py-3 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 rounded-xl hover:bg-slate-50 dark:bg-slate-800 transition-all font-bold shadow-sm text-sm mr-auto">
+                            <i class="fa-solid fa-arrow-left mr-1"></i> Back
                         </button>
-                        <button
-                            class="flex items-center gap-2 px-6 py-3 bg-gradient-primary text-white rounded-xl hover:opacity-90 transition-all font-bold shadow-lg shadow-blue-500/30 text-sm hover:-translate-y-0.5">
-                            <i class="fa-solid fa-floppy-disk"></i> Save Stall Config
+                        <button onclick="document.querySelector('[data-target=\'terms-section\']').click()" class="flex items-center gap-2 px-8 py-3 bg-gradient-primary text-white rounded-xl hover:opacity-90 transition-all font-bold shadow-lg shadow-blue-500/30 text-sm hover:-translate-y-0.5">
+                            Continue to Terms <i class="fa-solid fa-arrow-right ml-1"></i>
                         </button>
                     </div>
                 </section>
@@ -867,7 +914,7 @@ if (!isset($_SESSION['user_id'])) {
                 <section id="terms-section" class="page-section hidden animate-fade-in space-y-2"
                     style="animation-delay: 0.2s;">
                     <div class="w-full">
-                        <div class="premium-card overflow-hidden">
+                        <div class="premium-card overflow-hidden wait-for-data skeleton">
                             <!-- Banner Header -->
                             <div class="bg-gradient-primary px-8 py-6">
                                 <h3 class="text-xl font-bold text-white mb-1">Lease Duration</h3>
@@ -1027,18 +1074,360 @@ if (!isset($_SESSION['user_id'])) {
                             </div>
                         </div>
 
-                        <!-- Form Action Buttons -->
-                        <div class="flex items-center justify-end gap-4 mt-6">
-                            <button
-                                class="flex items-center gap-2 px-6 py-3 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 rounded-xl hover:bg-slate-50 dark:bg-slate-800 transition-all font-bold shadow-sm text-sm">
-                                Cancel
+                        <div class="flex items-center justify-end gap-4 mt-6 print:hidden">
+                            <button onclick="document.querySelector('[data-target=\'stall-section\']').click()" class="flex items-center gap-2 px-6 py-3 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 rounded-xl hover:bg-slate-50 dark:bg-slate-800 transition-all font-bold shadow-sm text-sm mr-auto">
+                                <i class="fa-solid fa-arrow-left mr-1"></i> Back
                             </button>
-                            <button
-                                class="flex items-center gap-2 px-6 py-3 bg-gradient-primary text-white rounded-xl hover:opacity-90 transition-all font-bold shadow-lg shadow-blue-500/30 text-sm hover:-translate-y-0.5">
-                                <i class="fa-solid fa-floppy-disk"></i> Save Terms
+                            <button onclick="window.print()" class="flex items-center gap-2 px-6 py-3 bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-600 text-slate-700 dark:text-slate-200 rounded-xl hover:bg-slate-50 dark:bg-slate-700 transition-all font-bold shadow-sm text-sm hover:-translate-y-0.5">
+                                <i class="fa-solid fa-print"></i> Print Contract PDF
+                            </button>
+                            <button id="btn-submit-main-contract" onclick="submitMainContract()" class="flex items-center gap-2 px-8 py-3 bg-gradient-primary text-white rounded-xl hover:opacity-90 transition-all font-bold shadow-lg shadow-blue-500/30 text-sm hover:-translate-y-0.5">
+                                <i class="fa-solid fa-file-signature"></i> Finalize & Submit Contract
                             </button>
                         </div>
                     </div>
+                </section>
+
+                <!-- ============================ -->
+                <!-- SECTION: MY CONTRACTS        -->
+                <!-- ============================ -->
+                <section id="contracts-section" class="page-section hidden animate-fade-in">
+                    <div class="premium-card !p-0 overflow-hidden border-none shadow-2xl">
+                        <!-- Unified Header -->
+                        <div class="bg-gradient-primary px-8 py-8">
+                            <h3 class="text-2xl font-black text-white mb-1 tracking-tight">Submitted Contracts</h3>
+                            <p class="text-blue-100/80 text-sm font-medium">Monitor and manage your signed lease agreements</p>
+                        </div>
+
+                        <!-- Data Table Controls -->
+                        <div class="p-6 bg-white dark:bg-slate-800 border-b border-slate-100 dark:border-slate-700 flex flex-col md:flex-row md:items-center justify-between gap-4">
+                            <div class="flex items-center gap-3">
+                                <span class="text-xs font-bold text-slate-400 uppercase tracking-widest">Show</span>
+                                <select id="history-length" class="bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2 text-xs font-bold text-slate-600 dark:text-slate-300 outline-none focus:border-blue-500 transition-all">
+                                    <option value="5">5 entries</option>
+                                    <option value="10" selected>10 entries</option>
+                                    <option value="25">25 entries</option>
+                                    <option value="50">50 entries</option>
+                                </select>
+                            </div>
+                            <div class="relative w-full md:w-72 group">
+                                <i class="fa-solid fa-magnifying-glass absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-blue-500 transition-colors"></i>
+                                <input type="text" id="history-search" placeholder="Search contracts..." class="w-full pl-11 pr-4 py-3 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-2xl text-sm font-medium focus:outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-500/5 transition-all outline-none">
+                            </div>
+                        </div>
+
+                        <!-- Main Table -->
+                        <div class="px-6 py-4 bg-white dark:bg-slate-800 min-h-[400px]">
+                            <div class="overflow-x-auto">
+                                <table class="w-full text-left border-separate border-spacing-y-3">
+                                    <thead class="bg-slate-50/50 dark:bg-slate-900/50 rounded-2xl">
+                                        <tr class="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">
+                                            <th class="px-6 py-4 rounded-l-2xl">Ref #</th>
+                                            <th class="px-6 py-4 text-center">Lessee Name</th>
+                                            <th class="px-6 py-4 text-center">Form Type</th>
+                                            <th class="px-6 py-4 text-center">Submitted</th>
+                                            <th class="px-6 py-4 text-center">Status</th>
+                                            <th class="px-6 py-4 text-right rounded-r-2xl">Action</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="contracts-tbody" class="text-sm">
+                                        <tr>
+                                            <td colspan="6" class="w-full text-center py-20 text-slate-500 font-medium">
+                                                <div class="flex flex-col items-center gap-4">
+                                                    <i class="fa-solid fa-spinner fa-spin text-3xl text-blue-500"></i>
+                                                    <p class="text-xs uppercase tracking-widest font-black opacity-50">Fetching your contracts...</p>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+
+                        <!-- Pagination -->
+                        <div class="px-8 py-6 bg-slate-50/50 dark:bg-slate-900/50 border-t border-slate-100 dark:border-slate-700 flex flex-col md:flex-row items-center justify-between gap-4">
+                            <p id="history-info" class="text-xs font-bold text-slate-400 uppercase tracking-widest">Showing 0 to 0 of 0 entries</p>
+                            <div id="history-pagination" class="flex items-center gap-2">
+                                <!-- Pagination buttons injected here -->
+                            </div>
+                        </div>
+                    </div>
+                </section>
+                    
+                    <script>
+                        document.addEventListener('DOMContentLoaded', () => {
+                            const tbody = document.getElementById('contracts-tbody');
+                            const searchInput = document.getElementById('history-search');
+                            const lengthSelect = document.getElementById('history-length');
+                            const paginationContainer = document.getElementById('history-pagination');
+                            const infoLabel = document.getElementById('history-info');
+                            
+                            let rawContracts = [];
+                            let filteredContracts = [];
+                            let currentPage = 1;
+                            let rowsPerPage = 10;
+
+                            async function loadContracts() {
+                                try {
+                                    const res = await fetch('../api/contract_api.php?action=list');
+                                    const data = await res.json();
+                                    if (data.success) {
+                                        rawContracts = data.data;
+                                        applyFilters();
+                                    }
+                                } catch (e) {
+                                    tbody.innerHTML = `<tr><td colspan="6" class="py-20 text-center text-rose-500 font-black uppercase text-[10px] tracking-widest">Failed to connect to secure server</td></tr>`;
+                                }
+                            }
+
+                            function applyFilters() {
+                                const q = searchInput.value.toLowerCase();
+                                filteredContracts = rawContracts.filter(c => {
+                                    let name = '';
+                                    try {
+                                        const d = JSON.parse(c.contract_data);
+                                        name = (d.lessee?.account_name || d['inp-account-name'] || d['inp-profile-name'] || '').toLowerCase();
+                                    } catch(e) {}
+                                    
+                                    return c.ref_no.toLowerCase().includes(q) || 
+                                           c.page_name.toLowerCase().includes(q) || 
+                                           name.includes(q);
+                                });
+                                currentPage = 1;
+                                renderTable();
+                            }
+
+                            function renderTable() {
+                                rowsPerPage = parseInt(lengthSelect.value);
+                                const last = currentPage * rowsPerPage;
+                                const first = last - rowsPerPage;
+                                const paginatedItems = filteredContracts.slice(first, last);
+                                
+                                buildTableRows(paginatedItems);
+                                buildPagination();
+                                
+                                const total = filteredContracts.length;
+                                const end = last > total ? total : last;
+                                infoLabel.textContent = `Showing ${total ? first + 1 : 0} to ${end} of ${total} entries`;
+                            }
+
+                            function buildTableRows(items) {
+                                if (items.length === 0) {
+                                    tbody.innerHTML = `<tr><td colspan="6" class="py-24 text-center text-slate-400 font-black uppercase text-[10px] tracking-widest"><i class="fa-solid fa-database mb-3 block text-2xl opacity-20"></i> No matching records found</td></tr>`;
+                                    return;
+                                }
+
+                                tbody.innerHTML = items.map(c => {
+                                    const statusColor = c.status === 'Approved' ? 'text-green-600 bg-green-50' : (c.status === 'Rejected' ? 'text-rose-600 bg-rose-50' : 'text-amber-600 bg-amber-50');
+                                    let lesseeName = 'Contract Draft';
+                                    try {
+                                        const d = JSON.parse(c.contract_data);
+                                        lesseeName = d.lessee?.account_name || d['inp-account-name'] || d['inp-profile-name'] || 'Draft';
+                                    } catch(e) {}
+
+                                    return `
+                                        <tr class="bg-white dark:bg-slate-800/80 hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-all shadow-[0_1px_3px_rgba(0,0,0,0.02)] group">
+                                            <td class="px-6 py-4 rounded-l-2xl font-mono text-[10px] font-black text-slate-400 group-hover:text-blue-500">${c.ref_no || 'N/A'}</td>
+                                            <td class="px-6 py-4 font-bold text-slate-700 dark:text-slate-100 text-sm text-center">${lesseeName}</td>
+                                            <td class="px-6 py-4 text-center">
+                                                <span class="inline-flex items-center gap-2 px-3 py-1 bg-blue-50/50 dark:bg-blue-500/10 text-blue-600 dark:text-blue-400 rounded-lg text-[10px] font-black uppercase tracking-wider">
+                                                    <i class="fa-solid fa-file-invoice opacity-50"></i> ${c.page_name}
+                                                </span>
+                                            </td>
+                                            <td class="px-6 py-4 font-bold text-slate-500 text-xs text-center">
+                                                ${new Date(c.submitted_at).toLocaleDateString(undefined, {month: 'short', day: 'numeric', year: 'numeric'})}
+                                            </td>
+                                            <td class="px-6 py-4 text-center">
+                                                <span class="px-3 py-1 text-[9px] font-black rounded-lg uppercase tracking-[0.1em] shadow-sm ${statusColor}">${c.status}</span>
+                                            </td>
+                                            <td class="px-6 py-4 rounded-r-2xl text-right">
+                                                <div class="flex items-center justify-end">
+                                                    <button onclick="printFromHistory('${c.slug}', ${c.id})" class="w-10 h-10 rounded-2xl bg-blue-50 dark:bg-blue-500/10 text-blue-600 dark:text-blue-400 hover:bg-blue-600 hover:text-white transition-all flex items-center justify-center group/btn shadow-sm" title="Print This Contract">
+                                                        <i class="fa-solid fa-print group-hover/btn:scale-110 transition"></i>
+                                                    </button>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    `;
+                                }).join('');
+                            }
+
+                            function buildPagination() {
+                                const pageCount = Math.ceil(filteredContracts.length / rowsPerPage);
+                                paginationContainer.innerHTML = '';
+                                
+                                if (pageCount <= 1) return;
+
+                                for (let i = 1; i <= pageCount; i++) {
+                                    const btn = document.createElement('button');
+                                    btn.className = `w-8 h-8 rounded-lg text-xs font-black transition-all ${currentPage === i ? 'bg-blue-600 text-white shadow-lg' : 'bg-slate-100 dark:bg-slate-700 text-slate-500'}`;
+                                    btn.textContent = i;
+                                    btn.onclick = () => { currentPage = i; renderTable(); }
+                                    paginationContainer.appendChild(btn);
+                                }
+                            }
+
+                            // Event Listeners
+                            searchInput.addEventListener('input', applyFilters);
+                            lengthSelect.addEventListener('change', () => { currentPage = 1; renderTable(); });
+                            
+                            // Load contracts when the tab is clicked
+                            document.querySelector('[data-target="contracts-section"]').addEventListener('click', loadContracts);
+                            loadContracts();
+                        });
+
+                        function showAppModal({ title, message, icon, iconBg, buttons }) {
+                            const modal = document.getElementById('app-modal');
+                            document.getElementById('app-modal-title').textContent = title;
+                            document.getElementById('app-modal-message').textContent = message;
+                            
+                            const iconEl = document.getElementById('app-modal-icon');
+                            iconEl.className = icon || 'fa-solid fa-circle-info';
+                            
+                            const iconBgEl = document.getElementById('app-modal-icon-bg');
+                            iconBgEl.className = `w-16 h-16 rounded-2xl flex items-center justify-center mx-auto mb-6 rotate-3 ${iconBg || 'bg-blue-100 text-blue-600'}`;
+
+                            const btnContainer = document.getElementById('app-modal-buttons');
+                            btnContainer.innerHTML = '';
+                            
+                            buttons.forEach(btn => {
+                                const b = document.createElement('button');
+                                b.className = btn.className || 'w-full py-3.5 bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-200 rounded-2xl font-bold transition-all hover:bg-slate-200 dark:hover:bg-slate-600 text-sm';
+                                b.innerHTML = btn.text;
+                                b.onclick = () => {
+                                    modal.classList.add('hidden');
+                                    if (btn.onClick) btn.onClick();
+                                };
+                                btnContainer.appendChild(b);
+                            });
+                            
+                            modal.classList.remove('hidden');
+                        }
+
+                        async function submitMainContract() {
+                            showAppModal({
+                                title: 'Confirm Submission',
+                                message: 'Are you sure you want to finalize and submit this lease contract? This will create a permanent snapshot of the data.',
+                                icon: 'fa-solid fa-file-signature',
+                                iconBg: 'bg-blue-100 text-blue-600',
+                                buttons: [
+                                    {
+                                        text: 'Yes, Submit Contract',
+                                        className: 'w-full py-3.5 bg-gradient-primary text-white rounded-2xl font-bold shadow-lg shadow-blue-500/20 active:scale-95 transition-all text-sm',
+                                        onClick: executeSubmission
+                                    },
+                                    {
+                                        text: 'No, Wait',
+                                        onClick: () => {}
+                                    }
+                                ]
+                            });
+                        }
+
+                        async function executeSubmission() {
+                            const btn = document.getElementById('btn-submit-main-contract');
+                            const originalText = btn.innerHTML;
+                            
+                            const getVal = (id) => document.getElementById(id) ? document.getElementById(id).value : '';
+                            const getTxt = (id) => document.getElementById(id) ? document.getElementById(id).textContent : '';
+
+                            // Gather PDF-ready snapshot data
+                            const contract_data = {
+                                lessee: {
+                                    account_name: getVal('inp-account-name'),
+                                    trade_name: getVal('inp-trade-name'),
+                                    address: getVal('inp-lessee-addr'),
+                                    email: getVal('inp-email'),
+                                    mobile: getVal('inp-mobile'),
+                                    tin: getVal('inp-tin'),
+                                    nature_of_business: document.querySelector('input[name="nat_business"]:checked')?.parentElement.textContent.trim() || ''
+                                },
+                                stall: {
+                                    location: getVal('inp-stall-code'),
+                                    stall_no: getVal('inp-stall-num'),
+                                    area: getVal('inp-area'),
+                                    rate: getVal('inp-rent-rate'),
+                                    monthly_rent: getTxt('txt-rent-total')
+                                },
+                                terms: {
+                                    start: getVal('inp-commence-lease'),
+                                    end: getVal('inp-expire-date'),
+                                    years: getVal('inp-lease-years'),
+                                    months: getVal('inp-lease-months'),
+                                    days: getVal('inp-lease-days')
+                                }
+                            };
+
+                            btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Submitting...';
+                            btn.disabled = true;
+
+                            try {
+                                const res = await fetch('../api/contract_api.php?action=submit', {
+                                    method: 'POST',
+                                    headers: { 'Content-Type': 'application/json' },
+                                    body: JSON.stringify({ 
+                                        page_id: 999, // Dashboard ID
+                                        contract_data: contract_data 
+                                    })
+                                });
+                                const data = await res.json();
+                                
+                                if (data.success) {
+                                    btn.innerHTML = '<i class="fa-solid fa-check-circle"></i> Contract Submitted!';
+                                    btn.style.background = '#22c55e';
+                                    
+                                    showAppModal({
+                                        title: 'Submission Success',
+                                        message: 'Your contract has been successfully submitted and saved. Reference No: ' + data.ref_no,
+                                        icon: 'fa-solid fa-circle-check',
+                                        iconBg: 'bg-green-100 text-green-600',
+                                        buttons: [
+                                            {
+                                                text: '<i class="fa-solid fa-print mr-2"></i> Print Contract Now',
+                                                className: 'w-full py-3.5 bg-blue-600 text-white rounded-2xl font-bold shadow-lg shadow-blue-500/20 active:scale-95 transition-all text-sm',
+                                                onClick: () => {
+                                                    window.open('print_contract.php?id=' + data.id, '_blank');
+                                                    setTimeout(() => window.location.reload(), 1000);
+                                                }
+                                            },
+                                            {
+                                                text: 'Done',
+                                                onClick: () => window.location.reload()
+                                            }
+                                        ]
+                                    });
+                                } else {
+                                    showAppModal({
+                                        title: 'Submission Failed',
+                                        message: data.message || 'We could not submit your contract at this time.',
+                                        icon: 'fa-solid fa-triangle-exclamation',
+                                        iconBg: 'bg-rose-100 text-rose-600',
+                                        buttons: [{ text: 'Back to Form' }]
+                                    });
+                                    btn.innerHTML = originalText;
+                                    btn.disabled = false;
+                                }
+                            } catch (e) {
+                                showAppModal({
+                                    title: 'System Error',
+                                    message: 'An unexpected error occurred while connecting to the server.',
+                                    icon: 'fa-solid fa-circle-xmark',
+                                    iconBg: 'bg-rose-100 text-rose-600',
+                                    buttons: [{ text: 'Dismiss' }]
+                                });
+                                btn.innerHTML = originalText;
+                                btn.disabled = false;
+                            }
+                        }
+
+                        function printFromHistory(slug, id) {
+                            if (slug === 'main-lease' || id) {
+                                window.open('print_contract.php?id=' + id, '_blank');
+                            } else {
+                                window.location.href = 'page.php?slug=' + slug + '&autoprint=true';
+                            }
+                        }
+                    </script>
                 </section>
             </div>
 
@@ -1207,6 +1596,22 @@ if (!isset($_SESSION['user_id'])) {
                     <button id="btn-confirm-leave" class="flex-1 px-6 py-3 bg-rose-600 text-white rounded-2xl font-bold hover:bg-rose-700 shadow-lg shadow-rose-500/30 transition-all">
                         Leave Page
                     </button>
+                </div>
+            </div>
+        </div>
+        <!-- Generic App Alert/Confirm Modal -->
+        <div id="app-modal" class="hidden fixed inset-0 z-[200] flex items-center justify-center bg-slate-900/60 backdrop-blur-md p-4">
+            <div class="bg-white dark:bg-slate-800 w-full max-w-sm rounded-[2.5rem] shadow-2xl overflow-hidden border border-slate-200 dark:border-slate-700 animate-fade-in-up">
+                <div class="p-10 text-center">
+                    <div id="app-modal-icon-bg" class="w-16 h-16 rounded-2xl flex items-center justify-center mx-auto mb-6 rotate-3">
+                        <i id="app-modal-icon" class="text-2xl"></i>
+                    </div>
+                    <h3 id="app-modal-title" class="text-xl font-extrabold text-slate-800 dark:text-white mb-2">Confirmation</h3>
+                    <p id="app-modal-message" class="text-slate-500 dark:text-slate-400 text-sm font-medium leading-relaxed mb-8"></p>
+                    
+                    <div id="app-modal-buttons" class="flex flex-col gap-2">
+                        <!-- Buttons dynamically added here -->
+                    </div>
                 </div>
             </div>
         </div>

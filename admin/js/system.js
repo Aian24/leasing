@@ -3,9 +3,22 @@ const SYSTEM_PAGE = {
     apiBase: '',
 
     init() {
+        console.log('System Module Initializing...');
         const path = window.location.pathname;
         const base = path.includes('/admin/') ? path.substring(0, path.indexOf('/admin/')) : '';
         this.apiBase = base + '/api/system_api.php';
+
+        // Fix header titles
+        if (document.getElementById('sys-info-grid')) {
+            safeSetText('page-title', 'System Information');
+            safeSetText('page-breadcrumb', 'Admin / System');
+        } else if (document.getElementById('logs-tbody')) {
+            safeSetText('page-title', 'Audit Logs');
+            safeSetText('page-breadcrumb', 'Admin / System');
+        } else if (document.getElementById('settings-list')) {
+            safeSetText('page-title', 'App Settings');
+            safeSetText('page-breadcrumb', 'Admin / System');
+        }
 
         if (document.getElementById('sys-info-grid')) this.loadInfo();
         if (document.getElementById('logs-tbody')) this.loadLogs();
@@ -60,7 +73,7 @@ const SYSTEM_PAGE = {
             if (data.success) {
                 tbody.innerHTML = data.data.map(l => `
                     <tr>
-                        <td><span style="font-family:monospace; font-size:0.75rem">${new Date(l.created_at).toLocaleString()}</span></td>
+                        <td><span style="font-family:monospace; font-size:0.75rem">${GLOBAL_UI.formatDateTime(l.created_at)}</span></td>
                         <td><div style="font-weight:700; color:#fff">${this.esc(l.username)}</div></td>
                         <td><span class="chip" style="background:rgba(59, 130, 246, 0.1); color:#a5b4fc">${this.esc(l.action)}</span></td>
                         <td style="font-size:0.8rem">${this.esc(l.detail)}</td>
@@ -81,14 +94,26 @@ const SYSTEM_PAGE = {
             const res = await fetch(`${this.apiBase}?action=settings_list`);
             const data = await res.json();
             if (data.success) {
-                list.innerHTML = data.data.map(s => `
-                    <div class="form-group" style="margin-bottom:20px; padding-bottom:20px; border-bottom:1px solid var(--border)">
-                        <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:8px">
-                            <label class="form-label" style="margin-bottom:0">${this.formatKey(s.setting_key)}</label>
-                            <span style="font-size:0.7rem; color:var(--muted); font-family:monospace">${s.setting_key}</span>
+                const order = ['app_name', 'app_tagline', 'maintenance_mode', 'session_timeout', 'date_format', 'time_format'];
+                const sortedData = data.data
+                    .filter(s => s.setting_key !== 'currency') // Hide currency
+                    .sort((a, b) => {
+                        let indexA = order.indexOf(a.setting_key);
+                        let indexB = order.indexOf(b.setting_key);
+                        if (indexA === -1) indexA = 99;
+                        if (indexB === -1) indexB = 99;
+                        return indexA - indexB;
+                    });
+
+                list.innerHTML = sortedData.map(s => `
+                    <div class="settings-row">
+                        <div class="settings-info">
+                            <label class="settings-label">${this.formatKey(s.setting_key)}</label>
+                            <p class="settings-desc">${this.esc(s.description)}</p>
                         </div>
-                        <p style="font-size:0.75rem; color:var(--muted); margin-bottom:10px">${this.esc(s.description)}</p>
-                        ${this.renderInput(s)}
+                        <div class="settings-action">
+                            ${this.renderInput(s)}
+                        </div>
                     </div>
                 `).join('');
             }
@@ -107,6 +132,32 @@ const SYSTEM_PAGE = {
                         <span class="slider round"></span>
                     </label>`;
         }
+
+        if (s.setting_key === 'date_format') {
+            const options = [
+                { val: 'M j, Y', label: 'Mar 17, 2026' },
+                { val: 'F j, Y', label: 'March 17, 2026' },
+                { val: 'm/d/Y', label: '03/17/2026' },
+                { val: 'd/m/Y', label: '17/03/2026' },
+                { val: 'Y-m-d', label: '2026-03-17' }
+            ];
+            return `<select class="form-control" onchange="SYSTEM_PAGE.updateSingleSetting('${s.setting_key}', this.value)">
+                        ${options.map(opt => `<option value="${opt.val}" ${s.setting_value === opt.val ? 'selected' : ''}>${opt.label}</option>`).join('')}
+                    </select>`;
+        }
+
+        if (s.setting_key === 'time_format') {
+            const options = [
+                { val: 'h:i A', label: '12-Hour (02:30 PM)' },
+                { val: 'g:i a', label: '12-Hour Short (2:30 pm)' },
+                { val: 'H:i', label: '24-Hour (14:30)' },
+                { val: 'H:i:s', label: '24-Hour with Seconds (14:30:05)' }
+            ];
+            return `<select class="form-control" onchange="SYSTEM_PAGE.updateSingleSetting('${s.setting_key}', this.value)">
+                        ${options.map(opt => `<option value="${opt.val}" ${s.setting_value === opt.val ? 'selected' : ''}>${opt.label}</option>`).join('')}
+                    </select>`;
+        }
+
         return `<input type="text" class="form-control" value="${this.esc(s.setting_value)}" 
                 onchange="SYSTEM_PAGE.updateSingleSetting('${s.setting_key}', this.value)">`;
     },
@@ -119,7 +170,21 @@ const SYSTEM_PAGE = {
                 body: JSON.stringify({ [key]: val })
             });
             const data = await res.json();
-            if (data.success) showToast(`Setting saved: ${this.formatKey(key)}`);
+            if (data.success) {
+                showToast(`Setting saved: ${this.formatKey(key)}`);
+                if (typeof GLOBAL_UI !== 'undefined') {
+                    GLOBAL_UI.settings[key] = val;
+                    // Proactively refresh logs if we are on the logs page to show new format
+                    if (document.getElementById('logs-tbody')) this.loadLogs();
+                    // Or info grid if time changed
+                    if (document.getElementById('sys-info-grid')) this.loadInfo();
+
+                    // Refresh branding if relevant settings changed
+                    if (key === 'app_name' || key === 'app_tagline') GLOBAL_UI.applyBrandSettings();
+                }
+            } else {
+                showToast(data.message || 'Error saving', 'danger');
+            }
         } catch (e) { showToast('Error saving', 'danger'); }
     },
 

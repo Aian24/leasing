@@ -2,8 +2,15 @@
 header('Content-Type: application/json');
 require_once __DIR__ . '/../database/config.php';
 
+
 $action = $_GET['action'] ?? '';
 $pdo = getPDO();
+
+session_start();
+if (!isset($_SESSION['user_id'])) {
+    echo json_encode(['success' => false, 'message' => 'Unauthorized']);
+    exit;
+}
 
 try {
     switch ($action) {
@@ -20,7 +27,16 @@ try {
                     'max_execution' => ini_get('max_execution_time') . 's',
                     'memory_limit' => ini_get('memory_limit'),
                     'server_time' => date('Y-m-d H:i:s'),
-                    'uptime' => 'Calculating...' // Mocking for now
+                    'uptime' => (function() {
+                        $out = shell_exec('wmic os get lastbootuptime 2>nul');
+                        if (preg_match("/(\d{14})/", $out, $m)) {
+                            $boot = date_create_from_format('YmdHis', $m[1]);
+                            $now = new DateTime();
+                            $diff = $now->diff($boot);
+                            return $diff->format('%a d, %h h, %i m');
+                        }
+                        return 'Unknown';
+                    })()
                 ]
             ]);
             break;
@@ -40,6 +56,7 @@ try {
             foreach ($data as $key => $val) {
                 $stmt = $pdo->prepare("UPDATE settings SET setting_value = ? WHERE setting_key = ?");
                 $stmt->execute([$val, $key]);
+                logAction('Updated Settings', "Changed {$key} to {$val}", 'info');
             }
             echo json_encode(['success' => true, 'message' => 'Settings updated']);
             break;

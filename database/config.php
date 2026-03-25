@@ -63,5 +63,45 @@ function getMySQLi(): mysqli {
     return $mysqli;
 }
 
+/**
+ * Fetch a setting value from the database
+ * @param string $key
+ * @param mixed $default
+ * @return mixed
+ */
+function getSetting($key, $default = null) {
+    try {
+        $pdo = getPDO();
+        $stmt = $pdo->prepare("SELECT setting_value FROM settings WHERE setting_key = ?");
+        $stmt->execute([$key]);
+        $val = $stmt->fetchColumn();
+        return ($val !== false) ? $val : $default;
+    } catch (Exception $e) {
+        return $default;
+    }
+}
+
+
 // ── Quick alias ───────────────────────────────────────────────
 // Use $pdo = getPDO(); anywhere after including this file
+
+/**
+ * Log an administrative action to the audit_logs table
+ * @param string $action Example: 'Login', 'Update Settings'
+ * @param string $detail Specific details of what was done
+ * @param string $level 'info', 'warning', 'danger', 'success'
+ */
+function logAction($action, $detail, $level = 'info') {
+    try {
+        $pdo = getPDO();
+        $userId = $_SESSION['user_id'] ?? null;
+        $username = $_SESSION['username'] ?? $_SESSION['name'] ?? 'System';
+        $ip = $_SERVER['REMOTE_ADDR'] ?? 'Unknown';
+        
+        $stmt = $pdo->prepare("INSERT INTO audit_logs (user_id, username, action, detail, ip_address, level) VALUES (?, ?, ?, ?, ?, ?)");
+        $stmt->execute([$userId, $username, $action, $detail, $ip, $level]);
+    } catch (Exception $e) {
+        // Silently fail logging if DB is down rather than breaking the whole app
+        error_log('[AUDIT LOG ERROR] ' . $e->getMessage());
+    }
+}

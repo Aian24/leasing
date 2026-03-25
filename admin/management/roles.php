@@ -29,97 +29,106 @@
         <?php include '../includes/layout/header.php'; ?>
 
         <div id="admin-content">
+            <?php
+            $slug = 'roles.php';
+            $stmt = getPDO()->prepare("SELECT content FROM pages WHERE slug = ?");
+            $stmt->execute([$slug]);
+            $dbContent = $stmt->fetchColumn();
 
-            <div class="panel" style="margin-bottom:22px">
-                <div class="panel-header">
-                    <div>
-                        <div class="panel-title"><i class="fa-solid fa-shield-halved" style="color:var(--primary);margin-right:10px"></i>Access Control Matrix</div>
-                        <div class="panel-subtitle">Manage module-level permissions for each user role</div>
-                    </div>
-                    <button class="btn btn-primary btn-sm" onclick="ROLES_PAGE.openPermModal()">
-                        <i class="fa-solid fa-plus"></i> Add Permission
-                    </button>
-                </div>
-                <div class="panel-body">
-                    <div style="overflow-x:auto">
-                        <table class="data-table">
-                            <thead>
-                                <tr>
-                                    <th style="width:35%">Permission Module</th>
-                                    <th class="perm-cell">Administrator</th>
-                                    <th class="perm-cell">Manager</th>
-                                    <th class="perm-cell">Staff</th>
-                                    <th class="perm-cell">Viewer</th>
-                                    <th style="text-align:right">Actions</th>
-                                </tr>
-                            </thead>
-                            <tbody id="roles-tbody">
-                                <tr><td colspan="6" style="text-align:center;padding:40px">Loading matrix...</td></tr>
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Role Definitions Grid -->
-            <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(280px, 1fr)); gap:20px; margin-top:24px">
-                <div class="panel" style="margin-bottom:0">
-                    <div class="panel-body">
-                        <div style="display:flex; align-items:center; gap:12px; margin-bottom:12px">
-                            <div style="width:40px;height:40px;border-radius:10px;background:rgba(59, 130, 246, 0.1);display:flex;align-items:center;justify-content:center;color:#3b82f6">
-                                <i class="fa-solid fa-user-shield"></i>
-                            </div>
-                            <div style="font-weight:800; color:#fff">Administrator</div>
+            if ($dbContent && trim($dbContent) !== '') {
+                echo $dbContent;
+            } else {
+            ?>
+                <div class="panel" style="margin-bottom:22px">
+                    <div class="panel-header">
+                        <div>
+                            <div class="panel-title"><i class="fa-solid fa-shield-halved" style="color:var(--primary);margin-right:10px"></i>Access Control Matrix</div>
+                            <div class="panel-subtitle">Manage module-level permissions for each user role</div>
                         </div>
-                        <p style="font-size:0.8125rem; color:var(--muted); line-height:1.6">
-                            Full system ownership. Can access all financial data, system logs, and manage other administrators.
-                        </p>
+                        <button class="btn btn-primary btn-sm" onclick="ROLES_PAGE.openPermModal()">
+                            <i class="fa-solid fa-plus"></i> Add Permission
+                        </button>
                     </div>
-                </div>
-
-                <div class="panel" style="margin-bottom:0">
                     <div class="panel-body">
-                        <div style="display:flex; align-items:center; gap:12px; margin-bottom:12px">
-                            <div style="width:40px;height:40px;border-radius:10px;background:rgba(56, 189, 248, 0.1);display:flex;align-items:center;justify-content:center;color:#38bdf8">
-                                <i class="fa-solid fa-briefcase"></i>
-                            </div>
-                            <div style="font-weight:800; color:#fff">Manager</div>
+                        <div style="overflow-x:auto">
+                            <table class="data-table">
+                                <thead>
+                                    <tr>
+                                        <th style="width:35%">Permission Module</th>
+                                        <th class="perm-cell">Administrator</th>
+                                        <th class="perm-cell">Manager</th>
+                                        <th class="perm-cell">Staff</th>
+                                        <th class="perm-cell">Viewer</th>
+                                        <th style="text-align:right">Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="roles-tbody">
+                                    <tr><td colspan="6" style="text-align:center;padding:40px">Loading matrix...</td></tr>
+                                </tbody>
+                            </table>
                         </div>
-                        <p style="font-size:0.8125rem; color:var(--muted); line-height:1.6">
-                            Operational control. Can manage lessees, contracts, and view reports. Limited system configuration access.
-                        </p>
                     </div>
                 </div>
 
-                <div class="panel" style="margin-bottom:0">
-                    <div class="panel-body">
-                        <div style="display:flex; align-items:center; gap:12px; margin-bottom:12px">
-                            <div style="width:40px;height:40px;border-radius:10px;background:rgba(34, 197, 94, 0.1);display:flex;align-items:center;justify-content:center;color:#22c55e">
-                                <i class="fa-solid fa-user-pen"></i>
+                <!-- Role Definitions Grid -->
+                <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(280px, 1fr)); gap:20px; margin-top:24px">
+                    <div class="panel" style="margin-bottom:0">
+                        <div class="panel-body">
+                            <div style="display:flex; align-items:center; gap:12px; margin-bottom:12px">
+                                <div style="width:40px;height:40px;border-radius:10px;background:rgba(59, 130, 246, 0.1);display:flex;align-items:center;justify-content:center;color:#3b82f6">
+                                    <i class="fa-solid fa-user-shield"></i>
+                                </div>
+                                <div style="font-weight:800; color:#fff">Administrator</div>
                             </div>
-                            <div style="font-weight:800; color:#fff">Staff</div>
+                            <p style="font-size:0.8125rem; color:var(--muted); line-height:1.6">
+                                Full system ownership. Can access all financial data, system logs, and manage other administrators.
+                            </p>
                         </div>
-                        <p style="font-size:0.8125rem; color:var(--muted); line-height:1.6">
-                            Daily operations. Can create and read records. restricted from deleting data or viewing sensitive logs.
-                        </p>
+                    </div>
+
+                    <div class="panel" style="margin-bottom:0">
+                        <div class="panel-body">
+                            <div style="display:flex; align-items:center; gap:12px; margin-bottom:12px">
+                                <div style="width:40px;height:40px;border-radius:10px;background:rgba(56, 189, 248, 0.1);display:flex;align-items:center;justify-content:center;color:#38bdf8">
+                                    <i class="fa-solid fa-briefcase"></i>
+                                </div>
+                                <div style="font-weight:800; color:#fff">Manager</div>
+                            </div>
+                            <p style="font-size:0.8125rem; color:var(--muted); line-height:1.6">
+                                Operational control. Can manage lessees, contracts, and view reports. Limited system configuration access.
+                            </p>
+                        </div>
+                    </div>
+
+                    <div class="panel" style="margin-bottom:0">
+                        <div class="panel-body">
+                            <div style="display:flex; align-items:center; gap:12px; margin-bottom:12px">
+                                <div style="width:40px;height:40px;border-radius:10px;background:rgba(34, 197, 94, 0.1);display:flex;align-items:center;justify-content:center;color:#22c55e">
+                                    <i class="fa-solid fa-user-pen"></i>
+                                </div>
+                                <div style="font-weight:800; color:#fff">Staff</div>
+                            </div>
+                            <p style="font-size:0.8125rem; color:var(--muted); line-height:1.6">
+                                Daily operations. Can create and read records. restricted from deleting data or viewing sensitive logs.
+                            </p>
+                        </div>
+                    </div>
+
+                    <div class="panel" style="margin-bottom:0">
+                        <div class="panel-body">
+                            <div style="display:flex; align-items:center; gap:12px; margin-bottom:12px">
+                                <div style="width:40px;height:40px;border-radius:10px;background:rgba(245, 158, 11, 0.1);display:flex;align-items:center;justify-content:center;color:#f59e0b">
+                                    <i class="fa-solid fa-eye"></i>
+                                </div>
+                                <div style="font-weight:800; color:#fff">Viewer</div>
+                            </div>
+                            <p style="font-size:0.8125rem; color:var(--muted); line-height:1.6">
+                                Read-only access. Ideal for external auditors or executive overview where no data modification is allowed.
+                            </p>
+                        </div>
                     </div>
                 </div>
-
-                <div class="panel" style="margin-bottom:0">
-                    <div class="panel-body">
-                        <div style="display:flex; align-items:center; gap:12px; margin-bottom:12px">
-                            <div style="width:40px;height:40px;border-radius:10px;background:rgba(245, 158, 11, 0.1);display:flex;align-items:center;justify-content:center;color:#f59e0b">
-                                <i class="fa-solid fa-eye"></i>
-                            </div>
-                            <div style="font-weight:800; color:#fff">Viewer</div>
-                        </div>
-                        <p style="font-size:0.8125rem; color:var(--muted); line-height:1.6">
-                            Read-only access. Ideal for external auditors or executive overview where no data modification is allowed.
-                        </p>
-                    </div>
-                </div>
-            </div>
-
+            <?php } ?>
         </div><!-- /admin-content -->
     </div><!-- /admin-main -->
 

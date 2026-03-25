@@ -31,19 +31,52 @@ try {
             $id = $data['id'] ?? null;
             $name = $data['page_name'] ?? '';
             $slug = $data['slug'] ?? '';
-            $content = $data['content'] ?? '';
             $type = $data['type'] ?? 'frontend';
             $isVisible = isset($data['is_visible']) ? (int)$data['is_visible'] : 0;
             $editorId = 1; // Default to admin
 
             if ($id) {
-                $stmt = $pdo->prepare("UPDATE pages SET page_name = ?, slug = ?, content = ?, type = ?, is_visible = ?, last_edited_by = ? WHERE id = ?");
-                $stmt->execute([$name, $slug, $content, $type, $isVisible, $editorId, $id]);
+                $stmt = $pdo->prepare("UPDATE pages SET page_name = ?, slug = ?, type = ?, is_visible = ?, last_edited_by = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?");
+                $stmt->execute([$name, $slug, $type, $isVisible, $editorId, $id]);
             } else {
+                $content = '';
                 $stmt = $pdo->prepare("INSERT INTO pages (page_name, slug, content, type, is_visible, last_edited_by) VALUES (?, ?, ?, ?, ?, ?)");
                 $stmt->execute([$name, $slug, $content, $type, $isVisible, $editorId]);
             }
-            echo json_encode(['success' => true, 'message' => 'Page saved successfully']);
+            echo json_encode(['success' => true, 'message' => 'Page details saved successfully']);
+            break;
+
+        case 'save_content':
+            $data = json_decode(file_get_contents('php://input'), true);
+            $id = $data['id'] ?? null;
+            $content = $data['content'] ?? '';
+            $editorId = 1;
+            
+            if ($id) {
+                // Clear any preview sessions after publishing
+                if (session_status() === PHP_SESSION_NONE) session_start();
+                unset($_SESSION['builder_preview'][$id]);
+
+                $stmt = $pdo->prepare("UPDATE pages SET content = ?, last_edited_by = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?");
+                $stmt->execute([$content, $editorId, $id]);
+                echo json_encode(['success' => true, 'message' => 'Page content published successfully']);
+            } else {
+                echo json_encode(['success' => false, 'message' => 'Invalid page ID']);
+            }
+            break;
+
+        case 'save_preview':
+            $data = json_decode(file_get_contents('php://input'), true);
+            $id = $data['id'] ?? null;
+            $content = $data['content'] ?? '';
+            
+            if ($id) {
+                if (session_status() === PHP_SESSION_NONE) session_start();
+                $_SESSION['builder_preview'][$id] = $content;
+                echo json_encode(['success' => true, 'message' => 'Preview generated']);
+            } else {
+                echo json_encode(['success' => false, 'message' => 'Invalid page ID']);
+            }
             break;
 
         case 'toggle':

@@ -42,9 +42,36 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $_SESSION['user_id'] = $user['id'];
                 $_SESSION['role'] = $user['role'];
                 $_SESSION['name'] = $user['name'];
+
+                // Update last login details
+                $updateStmt = $pdo->prepare("UPDATE users SET last_login = NOW(), last_login_ip = ? WHERE id = ?");
+                $updateStmt->execute([$_SERVER['REMOTE_ADDR'], $user['id']]);
+
+                // Create session record for dashboard tracking
+                $sessionStmt = $pdo->prepare("INSERT INTO user_sessions (user_id, session_token, ip_address, user_agent, expires_at) VALUES (?, ?, ?, ?, ?)");
+                $sessionToken = bin2hex(random_bytes(32));
+                $expiresAt = date('Y-m-d H:i:s', strtotime($remember ? '+30 days' : '+24 hours'));
+                $sessionStmt->execute([$user['id'], $sessionToken, $_SERVER['REMOTE_ADDR'], $_SERVER['HTTP_USER_AGENT'] ?? '', $expiresAt]);
+
+                // Log successful login
+                $_SESSION['username'] = $user['username']; // Ensure username is available for logging
+                logAction('Successful Login', "User '{$user['username']}' logged in successfully.", 'success');
+
                 header('Location: ' . ($user['role'] === 'Admin' ? 'admin/overview/dashboard.php' : 'user/index.php'));
                 exit;
             } else {
+                // Log failed attempt using a temporary fake session variable just for tracking this context
+                if ($user) {
+                    $_SESSION['user_id'] = $user['id'];
+                    $_SESSION['username'] = $user['username'];
+                    logAction('Failed Login', "Incorrect password attempt for user '{$user['username']}'.", 'warning');
+                    session_unset();
+                } else {
+                    $_SESSION['username'] = htmlspecialchars($username);
+                    logAction('Failed Login', "Attempted login with unknown username '{$username}'.", 'warning');
+                    session_unset();
+                }
+
                 $error = 'Invalid username or password.';
             }
         } else {
@@ -145,15 +172,26 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 }
 ?>
+<?php
+$pdo = getPDO();
+$settings_stmt = $pdo->query("SELECT setting_key, setting_value FROM settings WHERE setting_key IN ('app_name', 'app_tagline', 'maintenance_mode')");
+$app_settings = [];
+while ($row = $settings_stmt->fetch(PDO::FETCH_ASSOC)) {
+    $app_settings[$row['setting_key']] = $row['setting_value'];
+}
+$appName = $app_settings['app_name'] ?? 'LeasePro';
+$appTagline = $app_settings['app_tagline'] ?? 'Lease Management System';
+$isMaintenance = ($app_settings['maintenance_mode'] ?? 'false') === 'true';
+?>
 <!DOCTYPE html>
 <html lang="en">
 
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>LeasePro — Sign In</title>
+    <title><?php echo htmlspecialchars($appName); ?> — Sign In</title>
     <meta name="description"
-        content="Sign in to LeasePro Lease Management System to manage contracts, lessees, and stalls.">
+        content="Sign in to <?php echo htmlspecialchars($appName); ?> <?php echo htmlspecialchars($appTagline); ?> to manage contracts, lessees, and stalls.">
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- FontAwesome -->
@@ -523,6 +561,19 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     <!-- Main Content Wrapper (Grid Centering) -->
     <main class="relative z-10 min-h-screen w-full grid place-items-center p-4 md:p-8">
+        <!-- Maintenance Alert -->
+        <?php if($isMaintenance): ?>
+        <div class="mb-6 w-full max-w-md bg-amber-500/10 border border-amber-500/30 p-4 rounded-2xl flex items-center gap-4 animate-pulse">
+            <div class="w-10 h-10 bg-amber-500/20 rounded-full flex items-center justify-center text-amber-500 shrink-0">
+                <i class="fa-solid fa-screwdriver-wrench"></i>
+            </div>
+            <div>
+                <div class="text-sm font-bold text-amber-500">Scheduled Maintenance</div>
+                <div class="text-xs text-amber-500/80">Site is currently restricted to administrators.</div>
+            </div>
+        </div>
+        <?php endif; ?>
+
         <!-- Login Card -->
         <div class="login-card w-full max-w-md mx-auto p-8 md:p-10">
 
@@ -533,9 +584,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 <i class="fa-solid fa-building"></i>
             </div>
             <h1 class="text-3xl font-extrabold tracking-tight mb-1">
+                <?php if ($appName === 'LeasePro'): ?>
                 <span class="text-white">Lease</span><span class="text-gradient">Pro</span>
+                <?php else: ?>
+                <span class="text-white"><?php echo htmlspecialchars($appName); ?></span>
+                <?php endif; ?>
             </h1>
-            <p class="text-slate-400 text-sm font-medium tracking-wide">Lease Management System</p>
+            <p class="text-slate-400 text-sm font-medium tracking-wide"><?php echo htmlspecialchars($appTagline); ?></p>
         </div>
 
         <!-- Divider -->
@@ -617,9 +672,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         <div class="divider mt-8 mb-6"></div>
 
         <!-- Footer -->
-        <p class="text-center text-slate-500 text-xs">
-            &copy; 2026 LeasePro &mdash; Secure Admin Portal
-        </p>
+        <div class="mt-10 pt-6 border-t border-slate-500/10 text-center">
+            <p class="text-[11px] text-slate-500 font-bold uppercase tracking-[0.2em] leading-relaxed">
+                © <?php echo date('Y'); ?> <span class="text-slate-400"><?php echo htmlspecialchars($appName); ?></span> &bull; Security Team
+            </p>
+            <p class="text-[9px] text-slate-600 font-medium mt-1 opacity-60">Authorized Personnel &bull; Encrypted Portal</p>
+        </div>
 
     </div> <!-- Close Main Login Card -->
     </main> <!-- Close Main Wrapper -->
@@ -634,9 +692,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     <i class="fa-solid fa-building"></i>
                 </div>
                 <h1 class="text-2xl font-extrabold tracking-tight mb-1">
+                    <?php if ($appName === 'LeasePro'): ?>
                     <span class="text-white">Lease</span><span class="text-gradient">Pro</span>
+                    <?php else: ?>
+                    <span class="text-white"><?php echo htmlspecialchars($appName); ?></span>
+                    <?php endif; ?>
                 </h1>
-                <p class="text-slate-400 text-[10px] uppercase font-bold tracking-[0.2em]">Security Service</p>
+                <p class="text-slate-400 text-[10px] uppercase font-bold tracking-[0.2em]"><?php echo htmlspecialchars($appName); ?> Security Service</p>
             </div>
 
             <div class="divider mb-8"></div>

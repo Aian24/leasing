@@ -74,12 +74,14 @@ try {
                     $newHash = password_hash($data['new_password'], PASSWORD_DEFAULT);
                     $stmt = $pdo->prepare("UPDATE users SET password_hash = ? WHERE id = ?");
                     $stmt->execute([$newHash, $userId]);
+                    logAction('Changed Password', 'User changed their own password', 'warning');
                 } else {
                     echo json_encode(['success' => false, 'message' => 'Current password incorrect']);
                     exit;
                 }
             }
             
+            logAction('Updated Profile', 'User updated their personal information', 'info');
             echo json_encode(['success' => true, 'message' => 'Profile updated']);
             break;
 
@@ -100,6 +102,7 @@ try {
                 $avatarPath = 'uploads/avatars/' . $newName;
                 $stmt = $pdo->prepare("UPDATE users SET avatar = ? WHERE id = ?");
                 $stmt->execute([$avatarPath, $userId]);
+                logAction('Updated Avatar', 'User uploaded a new profile picture', 'info');
                 echo json_encode(['success' => true, 'avatar' => $avatarPath]);
             } else {
                 echo json_encode(['success' => false, 'message' => 'Upload failed']);

@@ -7,6 +7,12 @@ require_once __DIR__ . '/../database/config.php';
 
 $action = $_GET['action'] ?? '';
 
+session_start();
+if (!isset($_SESSION['user_id'])) {
+    echo json_encode(['success' => false, 'message' => 'Unauthorized']);
+    exit;
+}
+
 try {
     $pdo = getPDO();
 
@@ -35,6 +41,7 @@ try {
                 $body['status'] ?? 'Active'
             ]);
             echo json_encode(['success' => true, 'message' => 'User created successfully']);
+            logAction('Created User', "Created new user account '{$body['username']}' with role '{$body['role']}'", 'success');
             break;
 
         case 'update':
@@ -58,6 +65,8 @@ try {
 
             $stmt = $pdo->prepare($sql);
             $stmt->execute($params);
+            
+            logAction('Updated User', "Updated details for user '{$body['username']}'", 'info');
             echo json_encode(['success' => true, 'message' => 'User updated successfully']);
             break;
 
@@ -69,8 +78,14 @@ try {
                 break;
             }
 
+
+            $stmt = $pdo->prepare("SELECT username FROM users WHERE id = ?");
+            $stmt->execute([$id]);
+            $username = $stmt->fetchColumn();
+
             $stmt = $pdo->prepare("DELETE FROM users WHERE id = ?");
             $stmt->execute([$id]);
+            logAction('Deleted User', "Deleted user account '{$username}'", 'danger');
             echo json_encode(['success' => true, 'message' => 'User deleted successfully']);
             break;
 

@@ -15,22 +15,36 @@
     <div id="admin-main">
         <?php include '../includes/layout/header.php'; ?>
         <div id="admin-content">
-            <div class="panel">
-                <div class="panel-header">
-                    <div>
-                        <div class="panel-title"><i class="fa-solid fa-bullhorn" style="color:var(--primary);margin-right:10px"></i>Announcements</div>
-                        <div class="panel-subtitle">Broadcast messages to all system users</div>
+            <?php
+            $slug = 'announcements.php';
+            $stmt = getPDO()->prepare("SELECT content FROM pages WHERE slug = ?");
+            $stmt->execute([$slug]);
+            $dbContent = $stmt->fetchColumn();
+
+            if ($dbContent && trim($dbContent) !== '') {
+                echo $dbContent;
+            } else {
+            ?>
+                <div class="panel">
+                    <div class="panel-header">
+                        <div>
+                            <div class="panel-title"><i class="fa-solid fa-bullhorn" style="color:var(--primary);margin-right:10px"></i>Announcements</div>
+                            <div class="panel-subtitle">Broadcast messages to all system users</div>
+                        </div>
+                        <button class="btn btn-primary btn-sm" onclick="ANNOUNCEMENTS_PAGE.openAddModal()">
+                            <i class="fa-solid fa-plus"></i> New Broadcast
+                        </button>
                     </div>
-                    <button class="btn btn-primary btn-sm" onclick="ANNOUNCEMENTS_PAGE.openAddModal()">
-                        <i class="fa-solid fa-plus"></i> New Broadcast
-                    </button>
                 </div>
-                <div class="panel-body">
-                    <div id="announcements-list" style="display:flex; flex-direction:column; gap:16px">
-                        <!-- Dynamic Content -->
+
+                <div class="panel" style="margin-top:20px">
+                    <div class="panel-body">
+                        <div id="announcements-list" style="display:flex; flex-direction:column; gap:16px">
+                            <!-- Dynamic Content -->
+                        </div>
                     </div>
                 </div>
-            </div>
+            <?php } ?>
         </div>
     </div>
 
@@ -60,6 +74,18 @@
                             <option value="success">Success (Green)</option>
                             <option value="danger">Urgent (Red)</option>
                         </select>
+                    </div>
+                    <div class="form-group" style="margin-top:15px">
+                        <label style="display:flex; align-items:center; gap:12px; cursor:pointer; padding:10px; background:rgba(255,255,255,0.03); border-radius:10px; border:1px solid rgba(255,255,255,0.05)">
+                            <label class="switch">
+                                <input type="checkbox" name="is_active" id="ann-is-active" value="1" checked>
+                                <span class="slider round"></span>
+                            </label>
+                            <div>
+                                <div style="font-weight:700; color:#fff; font-size:0.875rem">Active Status</div>
+                                <div style="font-size:0.75rem; color:var(--muted)">Should users see this broadcast?</div>
+                            </div>
+                        </label>
                     </div>
                     <div class="modal-footer" style="padding:0; margin-top:20px">
                         <button type="button" class="btn btn-ghost" onclick="ANNOUNCEMENTS_PAGE.closeModal()">Cancel</button>

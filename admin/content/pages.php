@@ -118,12 +118,6 @@
                             <span style="font-size:14px; font-weight:600; color:#fff">Visible to Users</span>
                         </label>
                     </div>
-                    <div id="content-container">
-                        <div class="form-group">
-                            <label class="form-label">Page Content (HTML supported)</label>
-                            <textarea name="content" id="page-content" class="form-control" style="height:300px; font-family:monospace; font-size:12px" placeholder="<h1>Welcome</h1><p>...</p>"></textarea>
-                        </div>
-                    </div>
                     <div class="modal-footer" style="padding:0; margin-top:20px">
                         <button type="button" class="btn btn-ghost" onclick="PAGES_PAGE.closeModal()">Cancel</button>
                         <button type="submit" class="btn btn-primary">Save Page</button>

@@ -1,6 +1,7 @@
 /* ─── Global Admin UI Controller ─── */
 const GLOBAL_UI = {
     apiBase: '',
+    settings: {},
 
     init() {
         const path = window.location.pathname;
@@ -12,6 +13,7 @@ const GLOBAL_UI = {
         this.initProfile();
         this.syncSidebarUser();
         syncSidebarBadges();
+        this.loadGlobalSettings();
     },
 
     async syncSidebarUser() {
@@ -367,6 +369,79 @@ const GLOBAL_UI = {
     esc(s) {
         if (!s) return '—';
         return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+    },
+
+    async loadGlobalSettings() {
+        try {
+            const root = window.location.pathname.includes('/admin/') ? window.location.pathname.substring(0, window.location.pathname.indexOf('/admin/')) : '';
+            const res = await fetch(root + '/api/system_api.php?action=settings_list');
+            const data = await res.json();
+            if (data.success) {
+                data.data.forEach(s => {
+                    this.settings[s.setting_key] = s.setting_value;
+                });
+                this.applyBrandSettings();
+            }
+        } catch (e) { console.error('Settings load failed', e); }
+    },
+
+    applyBrandSettings() {
+        const appName = this.settings['app_name'] || 'LeasePro';
+        const brandEls = document.querySelectorAll('.brand-name');
+        brandEls.forEach(el => {
+            if (appName === 'LeasePro' || !appName) {
+                el.innerHTML = 'Lease<span>Pro</span>';
+            } else {
+                el.textContent = appName;
+            }
+        });
+
+        // Update document titles if they contain static 'LeasePro'
+        if (document.title.includes('LeasePro')) {
+            document.title = document.title.replace('LeasePro', appName);
+        }
+
+        const tagline = this.settings['app_tagline'];
+        const taglineEl = document.getElementById('page-breadcrumb');
+        if (tagline && taglineEl && taglineEl.textContent.trim() === 'Lease Management System') {
+            taglineEl.textContent = tagline;
+        }
+    },
+
+    formatDateTime(dateStr) {
+        if (!dateStr) return '—';
+        const d = new Date(dateStr.replace(' ', 'T'));
+        if (isNaN(d.getTime())) return dateStr;
+
+        const df = this.settings['date_format'] || 'M j, Y';
+        const tf = this.settings['time_format'] || 'h:i A';
+
+        return this.applyFormat(d, df + ' ' + tf);
+    },
+
+    applyFormat(date, format) {
+        const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+        const fullMonths = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+
+        const map = {
+            'Y': date.getFullYear(),
+            'm': String(date.getMonth() + 1).padStart(2, '0'),
+            'n': date.getMonth() + 1,
+            'd': String(date.getDate()).padStart(2, '0'),
+            'j': date.getDate(),
+            'M': months[date.getMonth()],
+            'F': fullMonths[date.getMonth()],
+            'H': String(date.getHours()).padStart(2, '0'),
+            'G': date.getHours(),
+            'h': String(date.getHours() % 12 || 12).padStart(2, '0'),
+            'g': date.getHours() % 12 || 12,
+            'i': String(date.getMinutes()).padStart(2, '0'),
+            's': String(date.getSeconds()).padStart(2, '0'),
+            'a': date.getHours() >= 12 ? 'pm' : 'am',
+            'A': date.getHours() >= 12 ? 'PM' : 'AM'
+        };
+
+        return format.split('').map(char => map[char] !== undefined ? map[char] : char).join('');
     }
 };
 
@@ -417,6 +492,7 @@ async function syncSidebarBadges() {
         if (json.success) {
             safeSetText('nav-badge-users', json.users.total);
             safeSetText('nav-count', json.lessees.total);
+            safeSetText('nav-contracts-count', json.contracts.pending);
             safeSetText('nav-badge-logs', json.logs.total);
             safeSetText('nav-badge-sessions', json.sessions.online);
         }

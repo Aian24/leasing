@@ -44,38 +44,46 @@ const PAGES_PAGE = {
             return;
         }
 
-        tbody.innerHTML = rows.map(p => {
+        tbody.innerHTML = '';
+        rows.forEach(p => {
             const isVisible = Number(p.is_visible) === 1;
-            return `
-                <tr>
-                    <td>
-                        <div style="font-weight:700; color:#fff">${this.esc(p.page_name)}</div>
-                        <div style="font-size:0.65rem; color:var(--muted); text-transform:uppercase; letter-spacing:0.05em; margin-top:2px">${p.type}</div>
-                    </td>
-                    <td style="color:var(--primary)">/${this.esc(p.slug)}</td>
-                    <td>
-                        <span class="chip ${isVisible ? 'chip-green' : 'chip-red'}">
-                            ${isVisible ? 'Visible' : 'Hidden'}
-                        </span>
-                    </td>
-                    <td style="font-size:0.8rem">${new Date(p.updated_at).toLocaleDateString()}</td>
-                    <td style="font-size:0.8rem">${this.esc(p.editor_name || 'System')}</td>
-                    <td style="text-align:right">
-                        <div style="display:flex; gap:8px; justify-content:flex-end">
-                            <button class="btn btn-ghost btn-sm" onclick="PAGES_PAGE.openEditModal(${p.id})" title="Edit Content">
-                                <i class="fa-solid fa-pen-to-square"></i>
-                            </button>
-                            <button class="btn btn-ghost btn-sm" onclick="PAGES_PAGE.toggleVisibility(${p.id})" title="Toggle Visibility">
-                                <i class="fa-solid ${isVisible ? 'fa-eye-slash' : 'fa-eye'}"></i>
-                            </button>
-                            <button class="btn btn-ghost btn-sm" style="color:#ef4444" onclick="PAGES_PAGE.confirmDelete(${p.id})" title="Delete Page">
-                                <i class="fa-solid fa-trash-can"></i>
-                            </button>
-                        </div>
-                    </td>
-                </tr>
+            const isFrontend = p.type === 'frontend';
+            const badgeClass = isFrontend ? 'bg-blue-500/20 text-blue-400' : 'bg-slate-700/50 text-slate-400';
+            const typeLabel = isFrontend ? 'Frontend' : 'System';
+
+            const tr = document.createElement('tr');
+            tr.innerHTML = `
+                <td>
+                    <div style="font-weight:700; color:#fff">${this.esc(p.page_name)}</div>
+                    <div style="font-size:0.65rem; color:var(--muted); text-transform:uppercase; letter-spacing:0.05em; margin-top:2px">${typeLabel}</div>
+                </td>
+                <td style="color:var(--primary)">/${this.esc(p.slug)}</td>
+                <td>
+                    <span class="chip ${isVisible ? 'chip-green' : 'chip-red'}">
+                        ${isVisible ? 'Visible' : 'Hidden'}
+                    </span>
+                </td>
+                <td style="font-size:0.8rem">${new Date(p.updated_at).toLocaleDateString()}</td>
+                <td style="font-size:0.8rem">${this.esc(p.editor_name || 'System')}</td>
+                <td style="text-align:right">
+                    <div style="display:flex; gap:8px; justify-content:flex-end">
+                        <a href="builder.php?id=${p.id}" class="btn btn-ghost btn-sm" style="color:var(--primary)" title="Build Content">
+                            <i class="fa-solid fa-paintbrush"></i>
+                        </a>
+                        <button class="btn btn-ghost btn-sm" onclick="PAGES_PAGE.openEditModal(${p.id})" title="Edit Details">
+                            <i class="fa-solid fa-pen-to-square"></i>
+                        </button>
+                        <button class="btn btn-ghost btn-sm" onclick="PAGES_PAGE.toggleVisibility(${p.id})" title="Toggle Visibility">
+                            <i class="fa-solid ${isVisible ? 'fa-eye-slash' : 'fa-eye'}"></i>
+                        </button>
+                        <button class="btn btn-ghost btn-sm" style="color:#ef4444" onclick="PAGES_PAGE.confirmDelete(${p.id})" title="Delete Page">
+                            <i class="fa-solid fa-trash-can"></i>
+                        </button>
+                    </div>
+                </td>
             `;
-        }).join('');
+            tbody.appendChild(tr);
+        });
     },
 
     // ── Modal & Form ──
@@ -84,6 +92,7 @@ const PAGES_PAGE = {
         form.reset();
         document.getElementById('page-id').value = '';
         document.getElementById('page-modal-title').textContent = 'Create New Page';
+
         document.getElementById('page-overlay').classList.add('open');
     },
 
@@ -95,10 +104,9 @@ const PAGES_PAGE = {
         document.getElementById('page-name').value = p.page_name;
         document.getElementById('page-slug').value = p.slug;
         document.getElementById('page-type').value = p.type;
-        document.getElementById('page-content').value = p.content || '';
         document.getElementById('page-visible').checked = Number(p.is_visible) === 1;
 
-        document.getElementById('page-modal-title').textContent = 'Edit Page Content';
+        document.getElementById('page-modal-title').textContent = 'Edit Page Details';
         document.getElementById('page-overlay').classList.add('open');
     },
 
@@ -110,6 +118,9 @@ const PAGES_PAGE = {
         e.preventDefault();
         const formData = new FormData(e.target);
         const data = Object.fromEntries(formData.entries());
+
+        // Fix unchecked checkbox missing in formData
+        data.is_visible = document.getElementById('page-visible').checked ? 1 : 0;
 
         try {
             const res = await fetch(`${this.apiBase}?action=save`, {

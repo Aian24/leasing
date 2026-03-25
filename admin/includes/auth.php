@@ -12,4 +12,11 @@ if (!isset($_SESSION['user_id'])) {
     }
     exit;
 }
+
+// Maintenance Mode Check
+require_once __DIR__ . '/../../database/config.php';
+if (getSetting('maintenance_mode') === 'true' && $_SESSION['role'] !== 'Admin') {
+    header('Location: ../../maintenance.php');
+    exit;
+}
 ?>

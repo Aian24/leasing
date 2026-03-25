@@ -69,7 +69,7 @@ const USERS_PAGE = {
                 <td style="font-family:'Inter',sans-serif;font-size:0.8125rem;color:var(--muted)">${u.email}</td>
                 <td><span class="chip ${roleColors[u.role] || 'chip-blue'}">${u.role}</span></td>
                 <td><span class="chip ${statusColors[u.status] || 'chip-amber'}">${u.status}</span></td>
-                <td style="font-size:0.75rem;color:var(--muted);font-family:'Inter',sans-serif">${u.lastLogin || 'Never'}</td>
+                <td style="font-size:0.75rem;color:var(--muted);font-family:'Inter',sans-serif">${u.lastLogin ? this.formatDate(u.lastLogin) : 'Never'}</td>
                 <td>
                     <div style="display:flex;gap:6px">
                         <button class="btn btn-ghost btn-xs" onclick="USERS_PAGE.openEdit(${u.id})"><i class="fa-solid fa-pen"></i></button>
@@ -162,6 +162,9 @@ const USERS_PAGE = {
         const colors = ['#3b82f6', '#ec4899', '#10b981', '#f59e0b', '#14b8a6'];
         let h = 0; if (name) for (const c of name) h += c.charCodeAt(0);
         return colors[h % colors.length];
+    },
+    formatDate(dateStr) {
+        return GLOBAL_UI.formatDateTime(dateStr);
     }
 };
 

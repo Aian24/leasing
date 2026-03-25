@@ -8,7 +8,7 @@ const ANNOUNCEMENTS_PAGE = {
 
         safeSetText('page-title', 'Announcements');
         safeSetText('page-breadcrumb', 'Admin / Global / Broadcasts');
-
+        window.ENABLE_ANNOUNCEMENTS = true;
         this.loadAnnouncements();
     },
 
@@ -28,6 +28,7 @@ const ANNOUNCEMENTS_PAGE = {
     },
 
     renderList(items) {
+        this.cache = items; // Store for editing
         const list = document.getElementById('announcements-list');
         if (!list) return;
 
@@ -37,19 +38,27 @@ const ANNOUNCEMENTS_PAGE = {
         }
 
         list.innerHTML = items.map(a => `
-            <div class="panel" style="margin-bottom:0; border-left:4px solid var(--${a.type || 'primary'})">
+            <div class="panel" style="margin-bottom:0; border-left:4px solid var(--${a.type || 'primary'}); ${a.is_active ? '' : 'opacity:0.6; filter:grayscale(0.5)'}">
                 <div class="panel-body" style="padding:15px">
                     <div style="display:flex; justify-content:space-between; align-items:flex-start">
-                        <div>
-                            <div style="font-weight:700; color:#fff; font-size:1rem; margin-bottom:5px">${this.esc(a.title)}</div>
+                        <div style="flex:1">
+                            <div style="display:flex; align-items:center; gap:10px; margin-bottom:5px">
+                                <div style="font-weight:700; color:#fff; font-size:1rem">${this.esc(a.title)}</div>
+                                ${a.is_active ? '' : '<span style="font-size:10px; background:rgba(255,255,255,0.1); padding:2px 6px; border-radius:4px; color:var(--muted)">INACTIVE</span>'}
+                            </div>
                             <div style="font-size:0.875rem; color:var(--muted); line-height:1.5">${this.esc(a.content)}</div>
                             <div style="font-size:0.75rem; color:var(--muted); margin-top:10px">
                                 <i class="fa-solid fa-user-circle"></i> ${this.esc(a.creator_name)} • 
                                 <i class="fa-solid fa-calendar"></i> ${new Date(a.created_at).toLocaleDateString()}
                             </div>
                         </div>
-                        <div style="display:flex; gap:8px">
-                            <button class="btn btn-ghost btn-sm" onclick="ANNOUNCEMENTS_PAGE.openEditModal(${JSON.stringify(a).replace(/'/g, "&apos;")})">
+                        <div style="display:flex; align-items:center; gap:12px">
+                            <label class="switch">
+                                <input type="checkbox" ${a.is_active ? 'checked' : ''} onchange="ANNOUNCEMENTS_PAGE.toggleAnnouncement(${a.id}, this.checked)">
+                                <span class="slider round"></span>
+                            </label>
+                            <div style="width:1px; height:24px; background:rgba(255,255,255,0.1)"></div>
+                            <button class="btn btn-ghost btn-sm" onclick="ANNOUNCEMENTS_PAGE.openEditModal(${a.id})">
                                 <i class="fa-solid fa-pen"></i>
                             </button>
                             <button class="btn btn-ghost btn-sm" style="color:#ef4444" onclick="ANNOUNCEMENTS_PAGE.confirmDelete(${a.id})">
@@ -62,19 +71,38 @@ const ANNOUNCEMENTS_PAGE = {
         `).join('');
     },
 
-    openAddModal() {
-        document.getElementById('ann-id').value = '';
-        document.getElementById('ann-form').reset();
-        safeSetText('ann-modal-title', 'New Broadcast');
-        document.getElementById('ann-overlay').classList.add('open');
+    async toggleAnnouncement(id, state) {
+        try {
+            const res = await fetch(`${this.apiBase}?action=toggle_status`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ id, is_active: state ? 1 : 0 })
+            });
+            const data = await res.json();
+            if (data.success) {
+                showToast(state ? 'Announcement activated' : 'Announcement deactivated');
+                this.loadAnnouncements(); // Refresh to update dimming
+            }
+        } catch (e) { showToast('Error toggling', 'danger'); }
     },
 
-    openEditModal(a) {
+    openEditModal(id) {
+        const a = this.cache.find(item => item.id == id);
+        if (!a) return;
         document.getElementById('ann-id').value = a.id;
         document.getElementById('ann-title').value = a.title;
         document.getElementById('ann-content').value = a.content;
         document.getElementById('ann-type').value = a.type;
+        document.getElementById('ann-is-active').checked = a.is_active == 1;
         safeSetText('ann-modal-title', 'Edit Broadcast');
+        document.getElementById('ann-overlay').classList.add('open');
+    },
+
+    openAddModal() {
+        document.getElementById('ann-id').value = '';
+        document.getElementById('ann-form').reset();
+        document.getElementById('ann-is-active').checked = true;
+        safeSetText('ann-modal-title', 'New Broadcast');
         document.getElementById('ann-overlay').classList.add('open');
     },
 
@@ -87,6 +115,12 @@ const ANNOUNCEMENTS_PAGE = {
         const formData = new FormData(e.target);
         const data = Object.fromEntries(formData.entries());
 
+        // Handle checkbox since it's not in FormData if unchecked
+        data.is_active = document.getElementById('ann-is-active').checked ? 1 : 0;
+
+        // Ensure ID is null if empty for new broadcasts
+        if (!data.id) delete data.id;
+
         try {
             const res = await fetch(`${this.apiBase}?action=save`, {
                 method: 'POST',
@@ -95,11 +129,27 @@ const ANNOUNCEMENTS_PAGE = {
             });
             const resData = await res.json();
             if (resData.success) {
-                showToast('Broadcast saved');
+                showToast(data.id ? 'Broadcast updated' : 'Broadcast published');
                 this.closeModal();
                 this.loadAnnouncements();
             }
         } catch (e) { showToast('Error saving', 'danger'); }
+    },
+
+    async toggleSystem(enabled) {
+        try {
+            const systemApi = this.apiBase.replace('announcements_api.php', 'system_api.php');
+            const data = { enable_announcements: enabled ? 'true' : 'false' };
+            const res = await fetch(`${systemApi}?action=settings_update`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(data)
+            });
+            const resData = await res.json();
+            if (resData.success) {
+                showToast(`Announcements ${enabled ? 'enabled' : 'disabled'}`);
+            }
+        } catch (e) { showToast('Error updating setting', 'danger'); }
     },
 
     confirmDelete(id) {
@@ -123,7 +173,13 @@ const ANNOUNCEMENTS_PAGE = {
 
     esc(s) {
         if (!s) return '';
-        return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+        return String(s)
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;')
+            .replace(/'/g, '&#39;')
+            .replace(/`/g, '&#96;');
     }
 };
 

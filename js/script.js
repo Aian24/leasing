@@ -4,6 +4,13 @@ document.addEventListener('DOMContentLoaded', () => {
     const sections = document.querySelectorAll('.page-section');
     const headerTitle = document.getElementById('header-title');
 
+    // --- Loading Skeleton Simulation ---
+    setTimeout(() => {
+        document.querySelectorAll('.wait-for-data.skeleton').forEach(el => {
+            el.classList.remove('skeleton', 'wait-for-data');
+        });
+    }, 600);
+
     // --- Unsaved Changes Protection State ---
     let isSaveClicked = false;
 
@@ -57,9 +64,14 @@ document.addEventListener('DOMContentLoaded', () => {
             // Save state
             localStorage.setItem('curr_active_section', targetId);
 
-            // Update Title
+            // Update Title and Breadcrumb
             const titleText = link.querySelector('.nav-text') ? link.querySelector('.nav-text').innerText : link.innerText.trim();
             headerTitle.innerText = titleText;
+
+            const breadcrumb = document.getElementById('header-breadcrumb');
+            if (breadcrumb) {
+                breadcrumb.innerText = (targetId === 'contracts-section') ? 'History' : 'Creation';
+            }
 
             // Close mobile sidebar if open
             if (window.innerWidth < 1024) {
@@ -284,6 +296,137 @@ document.addEventListener('DOMContentLoaded', () => {
 
     fetchProfile(); // Initial sync
     setupProfileModal();
+
+    // Announcements & Notifications
+    const fetchAnnouncements = async () => {
+        if (!window.ENABLE_ANNOUNCEMENTS) return;
+
+        const container = document.getElementById('ann-notifications');
+        const notiList = document.getElementById('noti-list');
+        const badge = document.getElementById('noti-badge');
+
+        if (!container || !notiList) return;
+
+        try {
+            const res = await fetch('../api/announcements_api.php?action=list&public=true');
+            const data = await res.json();
+
+            if (data.success && data.data.length > 0) {
+                const items = data.data;
+                const dismissed = JSON.parse(localStorage.getItem('dismissed_announcements') || '[]');
+
+                // 1. Flash only UNDISMISSED ones (cards)
+                const toFlash = items.filter(a => !dismissed.includes(a.id)).slice(0, 2);
+                container.innerHTML = toFlash.map(ann => `
+                    <div class="pointer-events-auto bg-white/95 dark:bg-slate-800/95 backdrop-blur-xl border border-slate-200 dark:border-slate-700/50 p-5 rounded-[2rem] shadow-2xl relative overflow-hidden group animate-slide-in-right mb-3" id="ann-card-${ann.id}">
+                        <div class="absolute left-0 top-0 bottom-0 w-1.5 bg-${ann.type === 'danger' ? 'rose' : ann.type === 'warning' ? 'amber' : ann.type === 'success' ? 'emerald' : 'blue'}-500"></div>
+                        <div class="flex items-start gap-4">
+                            <div class="flex-1 min-w-0">
+                                <div class="flex items-center gap-2 mb-2">
+                                    <span class="w-2 h-2 rounded-full bg-${ann.type === 'danger' ? 'rose' : ann.type === 'warning' ? 'amber' : ann.type === 'success' ? 'emerald' : 'blue'}-500 animate-pulse"></span>
+                                    <h4 class="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">Broadcast</h4>
+                                </div>
+                                <h5 class="text-sm font-extrabold text-slate-800 dark:text-white mb-1 leading-tight">${ann.title}</h5>
+                                <p class="text-[13px] text-slate-500 dark:text-slate-400 line-clamp-2 leading-relaxed">${ann.content}</p>
+                            </div>
+                            <button onclick="dismissAnnouncement(${ann.id})" class="text-slate-300 hover:text-rose-500 transition-colors p-1">
+                                <i class="fa-solid fa-circle-xmark text-lg"></i>
+                            </button>
+                        </div>
+                    </div>
+                `).join('');
+
+                // 2. Populate Notification List
+                notiList.innerHTML = items.map(ann => `
+                    <div class="p-4 rounded-2xl border border-slate-100 dark:border-slate-700/50 hover:bg-slate-50 dark:hover:bg-slate-700/30 transition-all cursor-default group">
+                        <div class="flex items-center justify-between mb-2">
+                            <div class="flex items-center gap-2">
+                                <span class="w-2 h-2 rounded-full bg-${ann.type === 'danger' ? 'rose' : ann.type === 'warning' ? 'amber' : ann.type === 'success' ? 'emerald' : 'blue'}-500"></span>
+                                <span class="text-[10px] font-bold text-slate-400 uppercase tracking-widest">${ann.type || 'info'}</span>
+                            </div>
+                            <span class="text-[9px] font-bold text-slate-300 group-hover:text-slate-400">${new Date(ann.created_at).toLocaleDateString()}</span>
+                        </div>
+                        <h6 class="text-sm font-bold text-slate-800 dark:text-white mb-1 group-hover:text-blue-500 transition-colors font-inter">${ann.title}</h6>
+                        <p class="text-[12px] text-slate-500 dark:text-slate-400 leading-relaxed">${ann.content}</p>
+                    </div>
+                `).join('');
+
+                // 3. Update Badge (Count only undismissed)
+                const undismissedCount = items.filter(a => !dismissed.includes(a.id)).length;
+                if (badge && undismissedCount > 0) {
+                    badge.textContent = undismissedCount;
+                    badge.classList.remove('hidden');
+                } else if (badge) {
+                    badge.classList.add('hidden');
+                }
+            } else {
+                notiList.innerHTML = '<div class="text-center py-10 text-slate-400 text-xs"><i class="fa-solid fa-ghost text-2xl mb-3 opacity-20"></i><p>No active broadcasts</p></div>';
+                if (badge) badge.classList.add('hidden');
+            }
+        } catch (e) {
+            console.error('Announcements fetch failed', e);
+        }
+    };
+
+    window.dismissAnnouncement = (id) => {
+        const card = document.getElementById(`ann-card-${id}`);
+        if (card) {
+            card.style.transform = 'translateX(100px)';
+            card.style.opacity = '0';
+            setTimeout(() => card.remove(), 300);
+        }
+
+        const dismissed = JSON.parse(localStorage.getItem('dismissed_announcements') || '[]');
+        if (!dismissed.includes(id)) {
+            dismissed.push(id);
+            localStorage.setItem('dismissed_announcements', JSON.stringify(dismissed));
+        }
+
+        // Refresh badge count without full fetch
+        const badge = document.getElementById('noti-badge');
+        if (badge) {
+            const currentCount = parseInt(badge.textContent) || 0;
+            if (currentCount > 1) {
+                badge.textContent = currentCount - 1;
+            } else {
+                badge.classList.add('hidden');
+            }
+        }
+    };
+
+    // Notification Toggle Logic
+    const notiToggle = document.getElementById('noti-toggle');
+    const notiPanel = document.getElementById('noti-panel');
+    if (notiToggle && notiPanel) {
+        notiToggle.addEventListener('click', (e) => {
+            e.stopPropagation();
+            const isOpen = !notiPanel.classList.contains('hidden');
+            if (isOpen) {
+                notiPanel.style.opacity = '0';
+                notiPanel.style.transform = 'translateY(10px) scale(0.95)';
+                setTimeout(() => notiPanel.classList.add('hidden'), 200);
+            } else {
+                notiPanel.classList.remove('hidden');
+                setTimeout(() => {
+                    notiPanel.style.opacity = '1';
+                    notiPanel.style.transform = 'translateY(0) scale(1)';
+                }, 10);
+                // Hide badge when opened
+                const badge = document.getElementById('noti-badge');
+                if (badge) badge.classList.add('hidden');
+            }
+        });
+
+        document.addEventListener('click', (e) => {
+            if (!notiPanel.contains(e.target) && e.target !== notiToggle) {
+                notiPanel.style.opacity = '0';
+                notiPanel.style.transform = 'translateY(10px) scale(0.95)';
+                setTimeout(() => notiPanel.classList.add('hidden'), 200);
+            }
+        });
+    }
+
+    fetchAnnouncements();
 
     // Restore State from localStorage
     const savedSection = localStorage.getItem('curr_active_section');

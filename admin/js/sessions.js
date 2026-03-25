@@ -75,7 +75,7 @@ const SESSIONS_PAGE = {
                             <div style="font-size:0.65rem; color:var(--muted)">${s.platform || 'System'}</div>
                         </div>
                     </td>
-                    <td style="font-size:0.78rem">${new Date(s.login_time).toLocaleString()}</td>
+                    <td style="font-size:0.78rem">${GLOBAL_UI.formatDateTime(s.login_time)}</td>
                     <td><span class="chip" style="background:rgba(59, 130, 246, 0.1); color:#94a3b8">${duration}</span></td>
                     <td>
                         <span class="chip chip-green">

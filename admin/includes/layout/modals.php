@@ -77,57 +77,6 @@
         </div>
     </div>
 
-    <!-- Announcement Modal -->
-    <div class="modal-backdrop" id="announcement-modal">
-        <div class="modal" style="max-width:560px">
-            <div class="modal-header">
-                <div class="modal-title" id="modal-ann-title">New Announcement</div>
-                <button class="modal-close" onclick="closeAnnModal()"><i class="fa-solid fa-xmark"></i></button>
-            </div>
-            <div class="modal-body">
-                <div class="form-group">
-                    <label class="form-label">Title <span style="color:#ef4444">*</span></label>
-                    <input type="text" id="ann-title" class="form-control"
-                        placeholder="e.g. Scheduled Maintenance Notice">
-                </div>
-                <div class="form-group">
-                    <label class="form-label">Message <span style="color:#ef4444">*</span></label>
-                    <textarea id="ann-body" class="form-control" rows="4" placeholder="Write your announcement here…"
-                        style="resize:vertical"></textarea>
-                </div>
-                <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px">
-                    <div class="form-group">
-                        <label class="form-label">Type</label>
-                        <select id="ann-type" class="form-control">
-                            <option value="info">ℹ️ Info</option>
-                            <option value="warning">⚠️ Warning</option>
-                            <option value="danger">🚨 Critical</option>
-                            <option value="success">✅ Success</option>
-                        </select>
-                    </div>
-                    <div class="form-group">
-                        <label class="form-label">Target Roles</label>
-                        <select id="ann-roles" class="form-control">
-                            <option value="all">All Users</option>
-                            <option value="Admin">Admin Only</option>
-                            <option value="Manager">Managers</option>
-                            <option value="Staff">Staff</option>
-                        </select>
-                    </div>
-                </div>
-                <div class="form-group">
-                    <label class="form-label">Expires On <span
-                            style="font-size:0.7rem;color:var(--muted)">(optional)</span></label>
-                    <input type="date" id="ann-expires" class="form-control">
-                </div>
-            </div>
-            <div class="modal-footer">
-                <button class="btn btn-ghost" onclick="closeAnnModal()">Cancel</button>
-                <button class="btn btn-primary" onclick="saveAnnouncement()"><i class="fa-solid fa-paper-plane"></i>
-                    Publish</button>
-            </div>
-        </div>
-    </div>
 
     <!-- Page Edit Modal -->
     <div class="modal-backdrop" id="page-modal">

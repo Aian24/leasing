@@ -42,8 +42,38 @@ try {
             break;
 
         case 'logs':
-            $stmt = $pdo->query("SELECT * FROM audit_logs ORDER BY created_at DESC LIMIT 100");
-            echo json_encode(['success' => true, 'data' => $stmt->fetchAll()]);
+            $page = max(1, (int)($_GET['page'] ?? 1));
+            $limit = max(1, min(100, (int)($_GET['limit'] ?? 25)));
+            $offset = ($page - 1) * $limit;
+            $search = $_GET['search'] ?? '';
+
+            $where = "1=1";
+            $params = [];
+            if ($search) {
+                $where .= " AND (username LIKE ? OR action LIKE ? OR detail LIKE ? OR ip_address LIKE ?)";
+                $params = ["%$search%", "%$search%", "%$search%", "%$search%"];
+            }
+
+            // Get total count
+            $stmtCount = $pdo->prepare("SELECT COUNT(*) FROM audit_logs WHERE $where");
+            $stmtCount->execute($params);
+            $total = $stmtCount->fetchColumn();
+
+            // Get data
+            $stmt = $pdo->prepare("SELECT * FROM audit_logs WHERE $where ORDER BY created_at DESC LIMIT $limit OFFSET $offset");
+            $stmt->execute($params);
+            $data = $stmt->fetchAll();
+
+            echo json_encode([
+                'success' => true,
+                'data' => $data,
+                'pagination' => [
+                    'page' => $page,
+                    'limit' => $limit,
+                    'total' => (int)$total,
+                    'pages' => ceil($total / $limit)
+                ]
+            ]);
             break;
 
         case 'settings_list':

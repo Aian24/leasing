@@ -95,6 +95,12 @@ $root = $in_subfolder ? '../' : '';
             App Settings
         </div>
 
+        <div class="nav-item <?php echo ($current_page == 'signatures.php') ? 'active' : ''; ?>"
+             onclick="window.location.href='<?php echo $root; ?>system/signatures.php'">
+            <i class="fa-solid fa-signature"></i>
+            Contract Signatures
+        </div>
+
         <div class="nav-section-label">App</div>
 
         <a class="nav-item" href="../../user/index.php" target="_blank">

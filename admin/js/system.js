@@ -2,6 +2,10 @@
 const SYSTEM_PAGE = {
     apiBase: '',
 
+    currentPage: 1,
+    currentLimit: 25,
+    currentSearch: '',
+
     init() {
         console.log('System Module Initializing...');
         const path = window.location.pathname;
@@ -15,6 +19,10 @@ const SYSTEM_PAGE = {
         } else if (document.getElementById('logs-tbody')) {
             safeSetText('page-title', 'Audit Logs');
             safeSetText('page-breadcrumb', 'Admin / System');
+
+            // Sync initial limit from UI
+            const limitSel = document.getElementById('log-limit');
+            if (limitSel) this.currentLimit = parseInt(limitSel.value);
         } else if (document.getElementById('settings-list')) {
             safeSetText('page-title', 'App Settings');
             safeSetText('page-breadcrumb', 'Admin / System');
@@ -64,13 +72,31 @@ const SYSTEM_PAGE = {
 
     async loadLogs() {
         const tbody = document.getElementById('logs-tbody');
+        const infoEl = document.getElementById('log-info');
+        const pagEl = document.getElementById('log-pagination');
         if (!tbody) return;
-        tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;padding:40px">Loading logs...</td></tr>';
+
+        tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;padding:40px"><i class="fa-solid fa-spinner fa-spin"></i> Fetching records...</td></tr>';
 
         try {
-            const res = await fetch(`${this.apiBase}?action=logs`);
+            const params = new URLSearchParams({
+                action: 'logs',
+                page: this.currentPage,
+                limit: this.currentLimit,
+                search: this.currentSearch
+            });
+
+            const res = await fetch(`${this.apiBase}?${params.toString()}`);
             const data = await res.json();
+
             if (data.success) {
+                if (data.data.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;padding:40px">No logs found matching your criteria.</td></tr>';
+                    infoEl.innerText = 'Showing 0 to 0 of 0 entries';
+                    pagEl.innerHTML = '';
+                    return;
+                }
+
                 tbody.innerHTML = data.data.map(l => `
                     <tr>
                         <td><span style="font-family:monospace; font-size:0.75rem">${GLOBAL_UI.formatDateTime(l.created_at)}</span></td>
@@ -81,8 +107,64 @@ const SYSTEM_PAGE = {
                         <td style="font-family:monospace; font-size:0.75rem; color:var(--muted)">${l.ip_address}</td>
                     </tr>
                 `).join('');
+
+                const p = data.pagination;
+                const start = ((p.page - 1) * p.limit) + 1;
+                const end = Math.min(p.page * p.limit, p.total);
+                infoEl.innerText = `Showing ${start} to ${end} of ${p.total} entries`;
+
+                this.renderPagination(p.page, p.pages);
+
+            } else {
+                tbody.innerHTML = `<tr><td colspan="6" style="text-align:center;padding:40px;color:#fca5a5">${data.message || 'Error loading logs'}</td></tr>`;
             }
-        } catch (e) { console.error(e); }
+        } catch (e) {
+            console.error(e);
+            tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;padding:40px;color:#fca5a5">Connection Error. Check console for details.</td></tr>';
+        }
+    },
+
+    renderPagination(current, total) {
+        const el = document.getElementById('log-pagination');
+        if (!el) return;
+        let html = '';
+
+        // Prev
+        html += `<button class="page-btn" ${current === 1 ? 'disabled' : ''} onclick="SYSTEM_PAGE.changePage(${current - 1})"><i class="fa-solid fa-angle-left"></i></button>`;
+
+        // Pages
+        let start = Math.max(1, current - 2);
+        let end = Math.min(total, start + 4);
+        if (end - start < 4) start = Math.max(1, end - 4);
+
+        for (let i = start; i <= end; i++) {
+            html += `<button class="page-btn ${i === current ? 'active' : ''}" onclick="SYSTEM_PAGE.changePage(${i})">${i}</button>`;
+        }
+
+        // Next
+        html += `<button class="page-btn" ${current === total ? 'disabled' : ''} onclick="SYSTEM_PAGE.changePage(${current + 1})"><i class="fa-solid fa-angle-right"></i></button>`;
+
+        el.innerHTML = html;
+    },
+
+    changeLimit(val) {
+        this.currentLimit = val;
+        this.currentPage = 1;
+        this.loadLogs();
+    },
+
+    changePage(page) {
+        this.currentPage = page;
+        this.loadLogs();
+    },
+
+    debounceSearch(val) {
+        clearTimeout(this.searchTimer);
+        this.searchTimer = setTimeout(() => {
+            this.currentSearch = val;
+            this.currentPage = 1;
+            this.loadLogs();
+        }, 400);
     },
 
     async loadSettings() {
@@ -96,7 +178,7 @@ const SYSTEM_PAGE = {
             if (data.success) {
                 const order = ['app_name', 'app_tagline', 'maintenance_mode', 'session_timeout', 'date_format', 'time_format'];
                 const sortedData = data.data
-                    .filter(s => s.setting_key !== 'currency') // Hide currency
+                    .filter(s => s.setting_key !== 'currency' && !s.setting_key.startsWith('leasing_')) // Hide currency and signatures
                     .sort((a, b) => {
                         let indexA = order.indexOf(a.setting_key);
                         let indexB = order.indexOf(b.setting_key);

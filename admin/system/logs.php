@@ -23,6 +23,26 @@
                     </div>
                 </div>
                 <div class="panel-body">
+                    <!-- Toolbar -->
+                    <div class="tbar" style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px">
+                        <div class="search-box" style="max-width:320px; flex:1">
+                            <i class="fa-solid fa-magnifying-glass"></i>
+                            <input type="text" id="log-search" placeholder="Search logs..." oninput="SYSTEM_PAGE.debounceSearch(this.value)">
+                        </div>
+                        <div style="display:flex; gap:10px; align-items:center">
+                            <span style="font-size:0.75rem; color:var(--muted); font-weight:600">Show:</span>
+                            <select id="log-limit" class="btn btn-ghost btn-sm" onchange="SYSTEM_PAGE.changeLimit(this.value)" style="cursor:pointer; background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.1)">
+                                <option value="10">10</option>
+                                <option value="25" selected>25</option>
+                                <option value="50">50</option>
+                                <option value="100">100</option>
+                            </select>
+                            <button class="btn btn-ghost btn-sm" onclick="SYSTEM_PAGE.loadLogs()" title="Refresh Logs">
+                                <i class="fa-solid fa-rotate"></i>
+                            </button>
+                        </div>
+                    </div>
+
                     <div style="overflow-x:auto">
                         <table class="data-table">
                             <thead>
@@ -39,6 +59,12 @@
                                 <tr><td colspan="6" style="text-align:center;padding:40px">Analyzing logs...</td></tr>
                             </tbody>
                         </table>
+                    </div>
+
+                    <!-- Pagination Footer -->
+                    <div style="display:flex; align-items:center; justify-content:space-between; margin-top:20px; flex-wrap:wrap; gap:15px">
+                        <div id="log-info" style="font-size:0.8rem; color:var(--muted)"></div>
+                        <div class="pagination" id="log-pagination"></div>
                     </div>
                 </div>
             </div>

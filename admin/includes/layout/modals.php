@@ -27,23 +27,25 @@
                         <div class="form-group">
                             <label class="form-label">Role</label>
                             <select id="uf-role" class="form-control">
-                                <option>Admin</option>
-                                <option>Manager</option>
-                                <option selected>Staff</option>
-                                <option>Viewer</option>
+                                <option value="" disabled>Select Role...</option>
+                                <option value="Admin">Admin</option>
+                                <option value="Manager">Manager</option>
+                                <option value="Staff" selected>Staff</option>
+                                <option value="Viewer">Viewer</option>
+                                <option value="User">User</option>
                             </select>
                         </div>
                         <div class="form-group">
                             <label class="form-label">Status</label>
                             <select id="uf-status" class="form-control">
-                                <option>Active</option>
-                                <option>Inactive</option>
-                                <option>Suspended</option>
+                                <option value="Active">Active</option>
+                                <option value="Inactive">Inactive</option>
+                                <option value="Suspended">Suspended</option>
                             </select>
                         </div>
                     </div>
                     <div class="form-group">
-                        <label class="form-label">Password <span style="font-size:0.7rem;color:var(--muted)">(leave
+                        <label class="form-label" id="uf-pass-label">Password <span style="font-size:0.7rem;color:var(--muted)">(leave
                                 blank to keep)</span></label>
                         <input type="password" id="uf-password" class="form-control" placeholder="Min. 8 characters">
                     </div>

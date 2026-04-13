@@ -27,12 +27,14 @@ $root = $in_subfolder ? '../' : '';
 
         <div class="nav-section-label">Management</div>
 
+        <?php if (canAccess('users.php')): ?>
         <div class="nav-item <?php echo ($current_page == 'users.php') ? 'active' : ''; ?>" 
              onclick="window.location.href='<?php echo $root; ?>management/users.php'">
             <i class="fa-solid fa-users"></i>
             User Management
             <span class="badge" id="nav-badge-users">6</span>
         </div>
+        <?php endif; ?>
 
         <div class="nav-item <?php echo ($current_page == 'lessees.php') ? 'active' : ''; ?>"
              onclick="window.location.href='<?php echo $root; ?>management/lessees.php'">
@@ -48,18 +50,22 @@ $root = $in_subfolder ? '../' : '';
             <span class="badge" id="nav-contracts-count" style="background:rgba(59,130,246,0.2);color:#93c5fd">—</span>
         </div>
 
+        <?php if (canAccess('roles.php')): ?>
         <div class="nav-item <?php echo ($current_page == 'roles.php') ? 'active' : ''; ?>"
              onclick="window.location.href='<?php echo $root; ?>management/roles.php'">
             <i class="fa-solid fa-shield-halved"></i>
             Roles & Permissions
         </div>
+        <?php endif; ?>
 
+        <?php if (canAccess('sessions.php')): ?>
         <div class="nav-item <?php echo ($current_page == 'sessions.php') ? 'active' : ''; ?>"
              onclick="window.location.href='<?php echo $root; ?>management/sessions.php'">
             <i class="fa-solid fa-tower-broadcast"></i>
             Active Sessions
             <span class="badge success" id="nav-badge-sessions">0</span>
         </div>
+        <?php endif; ?>
 
         <div class="nav-item <?php echo ($current_page == 'announcements.php') ? 'active' : ''; ?>"
              onclick="window.location.href='<?php echo $root; ?>management/announcements.php'">
@@ -68,38 +74,48 @@ $root = $in_subfolder ? '../' : '';
             <span class="badge">2</span>
         </div>
 
+        <?php if (canAccess('pages.php')): ?>
         <div class="nav-item <?php echo ($current_page == 'pages.php') ? 'active' : ''; ?>"
              onclick="window.location.href='<?php echo $root; ?>content/pages.php'">
             <i class="fa-solid fa-layer-group"></i>
             Frontend Pages
         </div>
+        <?php endif; ?>
 
         <div class="nav-section-label">System</div>
 
+        <?php if (canAccess('info.php')): ?>
         <div class="nav-item <?php echo ($current_page == 'info.php') ? 'active' : ''; ?>"
              onclick="window.location.href='<?php echo $root; ?>system/info.php'">
             <i class="fa-solid fa-server"></i>
             System Info
         </div>
+        <?php endif; ?>
 
+        <?php if (canAccess('logs.php')): ?>
         <div class="nav-item <?php echo ($current_page == 'logs.php') ? 'active' : ''; ?>"
              onclick="window.location.href='<?php echo $root; ?>system/logs.php'">
             <i class="fa-solid fa-scroll"></i>
             Audit Logs
             <span class="badge danger" id="nav-badge-logs">0</span>
         </div>
+        <?php endif; ?>
 
+        <?php if (canAccess('settings.php')): ?>
         <div class="nav-item <?php echo ($current_page == 'settings.php') ? 'active' : ''; ?>"
              onclick="window.location.href='<?php echo $root; ?>system/settings.php'">
             <i class="fa-solid fa-sliders"></i>
             App Settings
         </div>
+        <?php endif; ?>
 
+        <?php if (canAccess('signatures.php')): ?>
         <div class="nav-item <?php echo ($current_page == 'signatures.php') ? 'active' : ''; ?>"
              onclick="window.location.href='<?php echo $root; ?>system/signatures.php'">
             <i class="fa-solid fa-signature"></i>
             Contract Signatures
         </div>
+        <?php endif; ?>
 
         <div class="nav-section-label">App</div>
 

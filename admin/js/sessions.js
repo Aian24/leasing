@@ -3,7 +3,6 @@ const SESSIONS_PAGE = {
     apiBase: '',
 
     init() {
-        console.log('Sessions Module Initializing...');
         const path = window.location.pathname;
         const base = path.includes('/admin/') ? path.substring(0, path.indexOf('/admin/')) : '';
         this.apiBase = base + '/api/sessions_api.php';

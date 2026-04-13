@@ -7,7 +7,6 @@ const LESSEES_PAGE = {
     searchTimer: null,
 
     init() {
-        console.log('Lessees Module Initializing...');
         const path = window.location.pathname;
         const base = path.includes('/admin/') ? path.substring(0, path.indexOf('/admin/')) : '';
         this.apiBase = base + '/api/lessees_csv.php';

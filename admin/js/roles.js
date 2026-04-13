@@ -3,7 +3,6 @@ const ROLES_PAGE = {
     apiBase: '',
 
     init() {
-        console.log('Roles Module Initializing...');
         const path = window.location.pathname;
         const base = path.includes('/admin/') ? path.substring(0, path.indexOf('/admin/')) : '';
         this.apiBase = base + '/api/roles_api.php';
@@ -48,6 +47,7 @@ const ROLES_PAGE = {
                 <td class="perm-cell">${this.renderCheck(r.id, 'manager', r.manager_access)}</td>
                 <td class="perm-cell">${this.renderCheck(r.id, 'staff', r.staff_access)}</td>
                 <td class="perm-cell">${this.renderCheck(r.id, 'viewer', r.viewer_access)}</td>
+                <td class="perm-cell">${this.renderCheck(r.id, 'user', r.user_access)}</td>
                 <td style="text-align:right">
                     <div style="display:flex; gap:8px; justify-content:flex-end">
                         <button class="btn btn-ghost btn-sm" style="color:#60a5fa" onclick='ROLES_PAGE.openEditModal(${JSON.stringify(r)})' title="Edit Full">
@@ -123,6 +123,7 @@ const ROLES_PAGE = {
             form.querySelector('input[name="manager"]').checked = !!parseInt(item.manager_access);
             form.querySelector('input[name="staff"]').checked = !!parseInt(item.staff_access);
             form.querySelector('input[name="viewer"]').checked = !!parseInt(item.viewer_access);
+            form.querySelector('input[name="user"]').checked = !!parseInt(item.user_access);
         }
 
         document.getElementById('perm-overlay')?.classList.add('open');
@@ -147,7 +148,8 @@ const ROLES_PAGE = {
             admin: formData.get('admin') === 'on',
             manager: formData.get('manager') === 'on',
             staff: formData.get('staff') === 'on',
-            viewer: formData.get('viewer') === 'on'
+            viewer: formData.get('viewer') === 'on',
+            user: formData.get('user') === 'on'
         };
 
         if (!data.name) return;

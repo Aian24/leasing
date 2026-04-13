@@ -66,7 +66,7 @@ require_once '../includes/auth.php';
     <!-- MODALS -->
     <?php include '../includes/layout/modals.php'; ?>
 
-    <script src="../js/admin-core.js"></script>
+    <script src="../js/admin-core.js?v=1.1"></script>
     <script src="../js/dashboard.js"></script>
 </body>
 </html>

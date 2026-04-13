@@ -59,6 +59,7 @@
                                         <th class="perm-cell">Manager</th>
                                         <th class="perm-cell">Staff</th>
                                         <th class="perm-cell">Viewer</th>
+                                        <th class="perm-cell">User</th>
                                         <th style="text-align:right">Actions</th>
                                     </tr>
                                 </thead>
@@ -161,6 +162,9 @@
                             <label style="display:flex; align-items:center; gap:8px; cursor:pointer; font-size:0.85rem">
                                 <input type="checkbox" name="viewer" style="width:16px; height:16px"> Viewer
                             </label>
+                            <label style="display:flex; align-items:center; gap:8px; cursor:pointer; font-size:0.85rem">
+                                <input type="checkbox" name="user" style="width:16px; height:16px"> User
+                            </label>
                         </div>
                     </div>
 
@@ -175,7 +179,7 @@
 
     <?php include '../includes/layout/modals.php'; ?>
 
-    <script src="../js/admin-core.js"></script>
+    <script src="../js/admin-core.js?v=1.1"></script>
     <script src="../js/roles.js"></script>
 </body>
 

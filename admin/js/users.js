@@ -5,11 +5,9 @@ const USERS_PAGE = {
     apiBase: '',
 
     init() {
-        console.log('Users Module Initializing...');
         const path = window.location.pathname;
         const base = path.includes('/admin/') ? path.substring(0, path.indexOf('/admin/')) : '';
         this.apiBase = base + '/api/users_api.php';
-        console.log('Users API Path:', this.apiBase);
 
         // Immediate Header Update
         safeSetText('page-title', 'User Management');
@@ -28,10 +26,8 @@ const USERS_PAGE = {
 
     async refresh() {
         try {
-            console.log('Fetching Users List...');
             const res = await fetch(`${this.apiBase}?action=list`);
             const json = await res.json();
-            console.log('Users received:', json);
 
             if (json.success) {
                 this.data = json.data;
@@ -49,7 +45,7 @@ const USERS_PAGE = {
             return;
         }
 
-        const roleColors = { Admin: 'chip-blue', Manager: 'chip-blue', Staff: 'chip-green', Viewer: 'chip-amber' };
+        const roleColors = { Admin: 'chip-blue', Manager: 'chip-blue', Staff: 'chip-green', Viewer: 'chip-amber', User: 'chip-blue' };
         const statusColors = { Active: 'chip-green', Inactive: 'chip-amber', Suspended: 'chip-red' };
 
         const filtered = this.data.filter(u =>
@@ -67,7 +63,7 @@ const USERS_PAGE = {
                     </div>
                 </td>
                 <td style="font-family:'Inter',sans-serif;font-size:0.8125rem;color:var(--muted)">${u.email}</td>
-                <td><span class="chip ${roleColors[u.role] || 'chip-blue'}">${u.role}</span></td>
+                <td><span class="chip ${roleColors[u.role] || 'chip-blue'}">${u.role || 'None'}</span></td>
                 <td><span class="chip ${statusColors[u.status] || 'chip-amber'}">${u.status}</span></td>
                 <td style="font-size:0.75rem;color:var(--muted);font-family:'Inter',sans-serif">${u.lastLogin ? this.formatDate(u.lastLogin) : 'Never'}</td>
                 <td>
@@ -81,23 +77,49 @@ const USERS_PAGE = {
 
     openAdd() {
         this.editingId = null;
+        
+        const modal = document.getElementById('user-modal');
+        if (!modal) return console.error('User modal not found');
+
         safeSetText('modal-user-title', 'Add New User');
         document.getElementById('user-form')?.reset();
-        document.getElementById('user-modal')?.classList.add('open');
+        
+        // Ensure password label shows it's required for new users
+        const passLabel = document.getElementById('uf-pass-label');
+        if (passLabel) passLabel.innerHTML = 'Password <span style="color:#ef4444">*</span>';
+        
+        modal.classList.add('open');
     },
 
     openEdit(id) {
         const u = this.data.find(x => x.id === id);
         if (!u) return;
+
+        const modal = document.getElementById('user-modal');
+        if (!modal) return console.error('User modal not found');
+
         this.editingId = id;
         safeSetText('modal-user-title', 'Edit User');
-        document.getElementById('uf-name').value = u.name;
-        document.getElementById('uf-username').value = u.username;
-        document.getElementById('uf-email').value = u.email;
-        document.getElementById('uf-role').value = u.role;
-        document.getElementById('uf-status').value = u.status;
-        document.getElementById('uf-password').value = '';
-        document.getElementById('user-modal')?.classList.add('open');
+        
+        const fields = { 
+            'uf-name': u.name, 
+            'uf-username': u.username, 
+            'uf-email': u.email, 
+            'uf-role': u.role, 
+            'uf-status': u.status, 
+            'uf-password': '' 
+        };
+        
+        Object.keys(fields).forEach(key => {
+            const el = document.getElementById(key);
+            if (el) el.value = fields[key];
+        });
+        
+        // Show that password is optional for editing
+        const passLabel = document.getElementById('uf-pass-label');
+        if (passLabel) passLabel.innerHTML = 'Password <span style="font-size:0.7rem;color:var(--muted)">(leave blank to keep)</span>';
+        
+        modal.classList.add('open');
     },
 
     async save() {
@@ -111,7 +133,13 @@ const USERS_PAGE = {
             password: document.getElementById('uf-password').value
         };
 
-        if (!payload.name || !payload.username) return showToast('Name and Username are required', 'warning');
+        if (!payload.name || !payload.username || !payload.email) {
+            return showToast('Name, Username, and Email are required', 'warning');
+        }
+
+        if (!this.editingId && !payload.password) {
+            return showToast('Password is required for new users', 'warning');
+        }
 
         const action = this.editingId ? 'update' : 'create';
         try {

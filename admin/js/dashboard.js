@@ -1,13 +1,14 @@
 /* ─── Dashboard Module ─── */
 const DASHBOARD = {
     apiBase: '',
+    root: '',
 
     init() {
-        console.log('Dashboard Module Initializing...');
         const path = window.location.pathname;
         const base = path.includes('/admin/') ? path.substring(0, path.indexOf('/admin/')) : '';
         this.apiBase = base + '/api/dashboard_api.php';
-        console.log('Dashboard API Path:', this.apiBase);
+        this.root = base || '/';
+        if (!this.root.endsWith('/')) this.root += '/';
 
         // Immediate Header Update
         safeSetText('page-title', 'Dashboard Overview');
@@ -52,12 +53,10 @@ const DASHBOARD = {
 
     async refresh() {
         try {
-            console.log('Fetching Dashboard Stats...');
             const res = await fetch(`${this.apiBase}?action=stats`);
             if (!res.ok) throw new Error(`HTTP Error: ${res.status}`);
 
             const json = await res.json();
-            console.log('Dashboard Stats received:', json);
 
             if (json.success) {
                 safeSetText('stat-users', json.users.total);
@@ -109,7 +108,13 @@ const DASHBOARD = {
         }
 
         const html = users.map(u => {
-            const avatar = u.avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(u.name)}&background=3b82f6&color=fff&rounded=true`;
+            let avatar = u.avatar;
+            if (avatar) {
+                avatar = DASHBOARD.root + avatar;
+                avatar = avatar.replace(/\/+/g, '/');
+            } else {
+                avatar = `https://ui-avatars.com/api/?name=${encodeURIComponent(u.name)}&background=3b82f6&color=fff&rounded=true`;
+            }
             let timeStr = 'Never';
             if (u.last_login) {
                 const date = new Date(u.last_login);

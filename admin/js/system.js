@@ -7,7 +7,6 @@ const SYSTEM_PAGE = {
     currentSearch: '',
 
     init() {
-        console.log('System Module Initializing...');
         const path = window.location.pathname;
         const base = path.includes('/admin/') ? path.substring(0, path.indexOf('/admin/')) : '';
         this.apiBase = base + '/api/system_api.php';

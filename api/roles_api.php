@@ -3,6 +3,13 @@ header('Content-Type: application/json');
 require_once __DIR__ . '/../database/config.php';
 
 $action = $_GET['action'] ?? '';
+
+session_start();
+if (!isset($_SESSION['user_id']) || !canAccess('roles.php')) {
+    echo json_encode(['success' => false, 'message' => 'Unauthorized access to roles management']);
+    exit;
+}
+
 $pdo = getPDO();
 
 try {
@@ -19,7 +26,7 @@ try {
             $role = $data['role'] ?? ''; // admin, manager, staff, viewer
             $value = ($data['value'] === true || $data['value'] == 1) ? 1 : 0;
 
-            if (!$id || !in_array($role, ['admin', 'manager', 'staff', 'viewer'])) {
+            if (!$id || !in_array($role, ['admin', 'manager', 'staff', 'viewer', 'user'])) {
                 throw new Exception("Invalid parameters");
             }
 
@@ -38,10 +45,12 @@ try {
             $staff = ($data['staff'] ?? false) ? 1 : 0;
             $viewer = ($data['viewer'] ?? false) ? 1 : 0;
 
+            $user = ($data['user'] ?? false) ? 1 : 0;
+
             if (!$name) throw new Exception("Name required");
 
-            $stmt = $pdo->prepare("INSERT INTO permissions (permission_name, admin_access, manager_access, staff_access, viewer_access) VALUES (?, ?, ?, ?, ?)");
-            $stmt->execute([$name, $admin, $manager, $staff, $viewer]);
+            $stmt = $pdo->prepare("INSERT INTO permissions (permission_name, admin_access, manager_access, staff_access, viewer_access, user_access) VALUES (?, ?, ?, ?, ?, ?)");
+            $stmt->execute([$name, $admin, $manager, $staff, $viewer, $user]);
             echo json_encode(['success' => true, 'message' => 'Permission created']);
             break;
 
@@ -54,10 +63,12 @@ try {
             $staff = ($data['staff'] ?? false) ? 1 : 0;
             $viewer = ($data['viewer'] ?? false) ? 1 : 0;
 
+            $user = ($data['user'] ?? false) ? 1 : 0;
+
             if (!$id || !$name) throw new Exception("Missing parameters");
 
-            $stmt = $pdo->prepare("UPDATE permissions SET permission_name = ?, admin_access = ?, manager_access = ?, staff_access = ?, viewer_access = ? WHERE id = ?");
-            $stmt->execute([$name, $admin, $manager, $staff, $viewer, $id]);
+            $stmt = $pdo->prepare("UPDATE permissions SET permission_name = ?, admin_access = ?, manager_access = ?, staff_access = ?, viewer_access = ?, user_access = ? WHERE id = ?");
+            $stmt->execute([$name, $admin, $manager, $staff, $viewer, $user, $id]);
             echo json_encode(['success' => true, 'message' => 'Permission updated successfully']);
             break;
 

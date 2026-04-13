@@ -60,13 +60,7 @@ $heartbeat_stmt->execute([$current_uid]);
                 <div class="icon-btn" title="Refresh" onclick="location.reload()">
                     <i class="fa-solid fa-rotate"></i>
                 </div>
-                <a href="<?php 
-                    $in_sub = strpos($_SERVER['PHP_SELF'], '/overview/') !== false || 
-                             strpos($_SERVER['PHP_SELF'], '/management/') !== false || 
-                             strpos($_SERVER['PHP_SELF'], '/system/') !== false || 
-                             strpos($_SERVER['PHP_SELF'], '/content/') !== false;
-                    echo $in_sub ? '../../logout.php' : '../logout.php'; 
-                ?>" class="btn btn-ghost btn-sm" style="gap:7px">
+                <a href="javascript:void(0)" onclick="GLOBAL_UI.logout()" class="btn btn-ghost btn-sm" style="gap:7px">
                     <i class="fa-solid fa-power-off"></i> Logout
                 </a>
             </div>

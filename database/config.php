@@ -105,3 +105,48 @@ function logAction($action, $detail, $level = 'info') {
         error_log('[AUDIT LOG ERROR] ' . $e->getMessage());
     }
 }
+
+/**
+ * Role-based permission check
+ * @param string $page The filename of the page being accessed
+ * @return bool
+ */
+function canAccess($page) {
+    if (session_status() === PHP_SESSION_NONE) session_start();
+    $role = $_SESSION['role'] ?? 'Guest';
+    if ($role === 'Admin') return true;
+
+    // Map the current page filename to a Permission Module name in the DB
+    $map = [
+        'users.php'         => 'Manage Users',
+        'contracts.php'     => 'Manage Contracts',
+        'lessees.php'       => 'Manage Lessees',
+        'settings.php'      => 'System Config',
+        'info.php'          => 'System Config',
+        'logs.php'          => 'View Audit Logs',
+        'roles.php'         => 'System Config',
+        'pages.php'         => 'System Config',
+        'sessions.php'      => 'Manage Users',
+        'announcements.php' => 'Manage Contracts',
+        'signatures.php'    => 'Manage Contracts',
+        'dashboard.php'     => '' // Dashboard is always accessible
+    ];
+
+    // If page is not in the map, we assume it's publicly accessible within admin context
+    if (!isset($map[$page]) || $map[$page] === '') return true;
+    
+    $permName = $map[$page];
+    $column = strtolower($role) . '_access'; // e.g. manager_access
+    
+    try {
+        $pdo = getPDO();
+        // Check if the column exists in the table to avoid SQL errors
+        $stmt = $pdo->prepare("SELECT $column FROM permissions WHERE permission_name = ?");
+        $stmt->execute([$permName]);
+        $hasAccess = $stmt->fetchColumn();
+        return (bool)$hasAccess;
+    } catch (Exception $e) {
+        // Fallback to false on error for safety
+        return false;
+    }
+}

@@ -7,6 +7,8 @@ const GLOBAL_UI = {
         const path = window.location.pathname;
         const base = path.includes('/admin/') ? path.substring(0, path.indexOf('/admin/')) : '';
         this.apiBase = base + '/api/admin_api.php';
+        this.root = base || '/';
+        if (!this.root.endsWith('/')) this.root += '/';
 
         this.initSearch();
         this.initNotifications();
@@ -14,6 +16,22 @@ const GLOBAL_UI = {
         this.syncSidebarUser();
         syncSidebarBadges();
         this.loadGlobalSettings();
+    },
+
+    logout() {
+        confirmAction({
+            title: 'Confirm Logout',
+            msg: 'Are you sure you want to end your session?',
+            icon: 'fa-power-off',
+            color: '#fca5a5',
+            btnClass: 'btn-danger',
+            btnText: 'Yes, Sign Out',
+            action: () => {
+                const path = window.location.pathname;
+                const root = path.includes('/overview/') || path.includes('/management/') || path.includes('/system/') || path.includes('/content/') ? '../../' : '../';
+                window.location.href = root + 'logout.php';
+            }
+        });
     },
 
     async syncSidebarUser() {
@@ -32,7 +50,7 @@ const GLOBAL_UI = {
                 if (nameEl) nameEl.textContent = user.name;
                 if (roleEl) roleEl.textContent = user.role;
                 if (avatarEl) {
-                    avatarEl.src = user.avatar ? (root + '/' + user.avatar) : `https://ui-avatars.com/api/?name=${encodeURIComponent(user.name)}&background=4f46e5&color=fff&rounded=true`;
+                    avatarEl.src = user.avatar ? (GLOBAL_UI.root + user.avatar).replace(/\/+/g, '/') : `https://ui-avatars.com/api/?name=${encodeURIComponent(user.name)}&background=4f46e5&color=fff&rounded=true`;
                 }
             }
         } catch (e) { console.error('Sidebar user sync failed', e); }
@@ -201,9 +219,7 @@ const GLOBAL_UI = {
             const data = await res.json();
             if (data.success) {
                 const user = data.data;
-                const path = window.location.pathname;
-                const root = path.includes('/admin/') ? path.substring(0, path.indexOf('/admin/')) : '';
-                const avatarUrl = user.avatar ? (root + '/' + user.avatar) : `https://ui-avatars.com/api/?name=${encodeURIComponent(user.name)}&background=4f46e5&color=fff&rounded=true`;
+                const avatarUrl = user.avatar ? (GLOBAL_UI.root + user.avatar).replace(/\/+/g, '/') : `https://ui-avatars.com/api/?name=${encodeURIComponent(user.name)}&background=4f46e5&color=fff&rounded=true`;
 
                 confirmAction({
                     title: 'My Account Settings',

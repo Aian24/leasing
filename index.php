@@ -11,7 +11,8 @@ session_start();
 
 // If already logged in, redirect based on role
 if (isset($_SESSION['user_id'])) {
-    if ($_SESSION['role'] === 'Admin') {
+    $adminRoles = ['Admin', 'Manager', 'Staff', 'Viewer'];
+    if (in_array($_SESSION['role'], $adminRoles)) {
         header('Location: admin/overview/dashboard.php');
     } else {
         header('Location: user/index.php');
@@ -57,7 +58,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $_SESSION['username'] = $user['username']; // Ensure username is available for logging
                 logAction('Successful Login', "User '{$user['username']}' logged in successfully.", 'success');
 
-                header('Location: ' . ($user['role'] === 'Admin' ? 'admin/overview/dashboard.php' : 'user/index.php'));
+                $adminRoles = ['Admin', 'Manager', 'Staff', 'Viewer'];
+                $redirectPath = in_array($user['role'], $adminRoles) ? 'admin/overview/dashboard.php' : 'user/index.php';
+                header('Location: ' . $redirectPath);
                 exit;
             } else {
                 // Log failed attempt using a temporary fake session variable just for tracking this context

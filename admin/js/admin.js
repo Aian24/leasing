@@ -1,5 +1,4 @@
 /* ─── Admin Panel Data Store & Logic ─── */
-console.log('Admin JS Loading — v2.1.0 (Real Data + CRUD)');
 
 // ── Shared State ──────────────────────────────────────────────
 let DB = {

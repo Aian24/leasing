@@ -8,7 +8,7 @@ if (!isset($_SESSION['user_id'])) {
 
 // Maintenance Mode Check
 require_once __DIR__ . '/../database/config.php';
-if (getSetting('maintenance_mode') === 'true' && $_SESSION['role'] !== 'Admin') {
+if (getSetting('maintenance_mode') === 'true' && !in_array($_SESSION['role'], ['Admin', 'Manager', 'Staff'])) {
     header('Location: ../maintenance.php');
     exit;
 }
@@ -145,7 +145,7 @@ $appTagline = getSetting('app_tagline', 'Lease Management System');
                         <span class="text-[15px]"><?php echo htmlspecialchars($p['page_name']); ?></span>
                     </a>
                     <?php endforeach; ?>
-                    <a href="../logout.php"
+                    <a href="javascript:void(0)" onclick="confirmLogout()"
                         class="text-rose-500 hover:text-rose-600 font-bold hover:bg-rose-50 dark:hover:bg-rose-500/10 flex items-center gap-4 px-4 py-3 rounded-2xl transition-all">
                         <div class="w-9 h-9 rounded-xl flex items-center justify-center text-lg">
                             <i class="fa-solid fa-power-off"></i>
@@ -519,7 +519,7 @@ $appTagline = getSetting('app_tagline', 'Lease Management System');
 
                     <!-- Form Action Buttons -->
                         <button onclick="document.querySelector('[data-target=\'stall-section\']').click()" class="flex items-center gap-2 px-8 py-3 bg-gradient-primary text-white rounded-xl hover:opacity-90 transition-all font-bold shadow-lg shadow-blue-500/30 text-sm hover:-translate-y-0.5 ml-auto">
-                            Continue to Stall Config <i class="fa-solid fa-arrow-right ml-1"></i>
+                            Continue to Stall <i class="fa-solid fa-arrow-right ml-1"></i>
                         </button>
                     </div>
                 </section>
@@ -1077,9 +1077,6 @@ $appTagline = getSetting('app_tagline', 'Lease Management System');
                         <div class="flex items-center justify-end gap-4 mt-6 print:hidden">
                             <button onclick="document.querySelector('[data-target=\'stall-section\']').click()" class="flex items-center gap-2 px-6 py-3 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 rounded-xl hover:bg-slate-50 dark:bg-slate-800 transition-all font-bold shadow-sm text-sm mr-auto">
                                 <i class="fa-solid fa-arrow-left mr-1"></i> Back
-                            </button>
-                            <button onclick="window.print()" class="flex items-center gap-2 px-6 py-3 bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-600 text-slate-700 dark:text-slate-200 rounded-xl hover:bg-slate-50 dark:bg-slate-700 transition-all font-bold shadow-sm text-sm hover:-translate-y-0.5">
-                                <i class="fa-solid fa-print"></i> Print Contract PDF
                             </button>
                             <button id="btn-submit-main-contract" onclick="submitMainContract()" class="flex items-center gap-2 px-8 py-3 bg-gradient-primary text-white rounded-xl hover:opacity-90 transition-all font-bold shadow-lg shadow-blue-500/30 text-sm hover:-translate-y-0.5">
                                 <i class="fa-solid fa-file-signature"></i> Finalize & Submit Contract
@@ -1811,6 +1808,42 @@ $appTagline = getSetting('app_tagline', 'Lease Management System');
 
             // Update profile name
             setVal('inp-profile-name', payload.company_name || payload.owner_lessee_name);
+        };
+
+    </script>
+
+    <!-- Logout Modal -->
+    <div id="logout-modal" class="fixed inset-0 z-[120] flex items-center justify-center hidden">
+        <div class="absolute inset-0 bg-slate-900/60 backdrop-blur-sm" onclick="closeLogout()"></div>
+        <div class="bg-white dark:bg-slate-800 rounded-[2.5rem] p-10 max-w-sm w-full relative shadow-[0_32px_64px_-16px_rgba(0,0,0,0.3)] scale-95 opacity-0 transition-all duration-300" id="logout-modal-card">
+            <div class="w-20 h-20 bg-rose-50 dark:bg-rose-500/10 rounded-3xl flex items-center justify-center text-rose-500 text-3xl mb-8 mx-auto">
+                <i class="fa-solid fa-power-off"></i>
+            </div>
+            <h3 class="text-2xl font-black text-slate-800 dark:text-white mb-3 text-center">Ready to leave?</h3>
+            <p class="text-slate-500 dark:text-slate-400 text-[15px] leading-relaxed mb-10 text-center">Your session will be ended securely. Please ensure any unsaved changes are saved.</p>
+            <div class="flex flex-col gap-3">
+                <a href="../logout.php" class="w-full py-4 bg-rose-500 text-white rounded-2xl font-bold text-sm text-center transition-all hover:bg-rose-600 shadow-xl shadow-rose-500/30 hover:-translate-y-0.5 active:translate-y-0">Yes, Sign Out</a>
+                <button onclick="closeLogout()" class="w-full py-4 text-slate-400 dark:text-slate-500 font-bold text-sm transition-all hover:text-slate-600 dark:hover:text-slate-300">Maybe later</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        window.confirmLogout = function() {
+            const m = document.getElementById('logout-modal');
+            const c = document.getElementById('logout-modal-card');
+            m.classList.remove('hidden');
+            setTimeout(() => {
+                c.style.opacity = '1';
+                c.style.transform = 'scale(1)';
+            }, 10);
+        };
+        window.closeLogout = function() {
+            const m = document.getElementById('logout-modal');
+            const c = document.getElementById('logout-modal-card');
+            c.style.opacity = '0';
+            c.style.transform = 'scale(0.95)';
+            setTimeout(() => m.classList.add('hidden'), 300);
         };
     </script>
 </body>
